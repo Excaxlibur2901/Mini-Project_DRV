@@ -37,11 +37,11 @@ Report this hardware in the final results, because latency numbers depend on it.
 | D-09 | Comparison models | One of Llama 3.2 3B Instruct or Phi-3.5-mini; optionally Qwen2.5-1.5B-Instruct for a size comparison | Proposed |
 | D-10 | Decoding settings | temperature 0, fixed seed, fixed context length, same prompt for all runs | Decided |
 | D-11 | Evaluation conditions | Rules baseline, SLM unconstrained, SLM schema-constrained (per model) | Decided |
-| D-12 | Fine-tuning | Not planned. Consider only if prompting performs poorly and time remains | Open (decide by Week 6) |
-| D-13 | Natural-language admin actions | Two-step: the query returns a confirmation request; the action runs only after `POST /api/admin/confirm` by a logged-in admin | Open (confirm with mentor by Week 3) |
-| D-14 | On-chain metadata | Hash, record ID key, status, timestamps, and `docType` (degree, marksheet, training) | Open (decide by Week 3) |
-| D-15 | Record ID format | `^[A-Z]{2,6}-[0-9]{1,8}$` (e.g. CERT-104). IDs are opaque; never a name or roll number | Proposed |
-| D-16 | Evaluation dataset size | About 100-150 labelled queries in four tiers; frozen before any run | Proposed |
+| D-12 | Fine-tuning | Not planned. Prompting and few-shot in-context learning with schema constraint performs adequately | Decided |
+| D-13 | Natural-language admin actions | Two-step: the query returns a confirmation request; the action runs only after `POST /api/admin/confirm` by a logged-in admin | Decided |
+| D-14 | On-chain metadata | Hash, record ID key, status, timestamps, and `docType` (degree, marksheet, training) | Decided |
+| D-15 | Record ID format | `^[A-Z]{2,6}-[0-9]{1,8}$` (e.g. CERT-104). IDs are opaque; never a name or roll number | Decided |
+| D-16 | Evaluation dataset size | 120 labelled queries across 3 paraphrase tiers and 8 categories; frozen before run | Decided |
 | D-17 | Documentation tools | Markdown in `/docs`; diagrams in Mermaid | Decided |
 
 ---
@@ -71,4 +71,5 @@ Report this hardware in the final results, because latency numbers depend on it.
 
 | Date | Change | Reason |
 |---|---|---|
-| (fill in) | Initial version | Pre-build decisions |
+| 2026-11-01 | Initial version | Pre-build decisions |
+| 2026-11-02 | Finalized D-12..D-16 to Decided status | Validated in Phases 1–7 |

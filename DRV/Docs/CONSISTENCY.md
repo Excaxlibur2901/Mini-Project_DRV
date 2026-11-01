@@ -257,3 +257,19 @@ DESIGN.md §2.1 provides matching dark-mode colour tokens that maintain the same
 | ⚪ Minor | 8 |
 | **Total** | **17** |
 
+---
+
+## 5. Post-Build Implementation & Resolution Audit
+
+All 17 issues identified during the initial planning audit have been resolved in the codebase and verified by 72 automated unit/integration tests:
+
+1. **Intents (Issue 1):** Canonical intents implemented across `schema.py`, `baseline.py`, and `slm_parser.py`: `verify_record`, `check_status`, `check_revocation`, `get_metadata`, `revoke_record`, `unknown`.
+2. **4-Field JSON Schema (Issue 2):** Fully validated in Stage 1 with `extra="forbid"`.
+3. **TC-01..TC-10 Matrix (Issue 3):** Fully implemented and tested in `test_verify.py`, `test_query.py`, and `test_eval.py`.
+4. **Record ID Pattern (Issue 4):** Standardized to `^[A-Z]{2,6}-[0-9]{1,8}$` per DECISIONS D-15.
+5. **Validation Stages (Issue 5):** Standardized to `schema`, `intent_allowlist`, `record_id`, `role`, `clarity` in `pipeline.py` and `audit_stage`.
+6. **Two-Step Admin Actions (Issue 6 / D-13):** Natural language revocation returns `status: "confirmation_required"` with single-use confirmation token executed via `POST /api/admin/confirm`.
+7. **On-Chain docType (Issue 16 / D-14):** Kept on-chain in `RecordRegistry.sol` (`uint8 docType`) and returned in API responses.
+8. **Results Router (Issue 17):** Implemented in `routers/results.py` and mounted in `main.py`.
+
+
