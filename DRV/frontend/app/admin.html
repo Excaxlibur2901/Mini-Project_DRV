@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Record Verifier — Registry Administration</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .tab-btn {
+      padding: 10px 20px;
+      border: none;
+      background: none;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all var(--dur-fast) var(--ease-out);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .tab-btn.active {
+      background-color: var(--surface);
+      color: var(--ink);
+      font-weight: 600;
+      box-shadow: 0 1px 3px rgba(27, 42, 65, 0.08);
+    }
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(20, 24, 29, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--dur-base) var(--ease-out);
+    }
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal-card {
+      background-color: var(--surface);
+      border-radius: 10px;
+      padding: 28px;
+      max-width: 480px;
+      width: 90%;
+      border: 1px solid var(--border);
+      box-shadow: 0 12px 32px rgba(27, 42, 65, 0.15);
+      transform: translateY(12px);
+      transition: transform var(--dur-base) var(--ease-out);
+    }
+    .modal-overlay.open .modal-card {
+      transform: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="top-nav">
+    <div class="container top-nav-inner">
+      <a href="index.html" class="brand">
+        <div class="brand-seal-icon">
+          <span class="material-symbols-outlined" style="font-size: 20px;">verified</span>
+        </div>
+        <span>Record Verifier</span>
+      </a>
+
+      <nav class="nav-links">
+        <a href="index.html" class="nav-link">Verify</a>
+        <a href="ask.html" class="nav-link">Ask</a>
+        <a href="admin.html" class="nav-link active">Admin</a>
+        <a href="results.html" class="nav-link">Results</a>
+      </nav>
+
+      <button class="theme-toggle-btn" aria-label="Toggle theme">
+        <span class="material-symbols-outlined" style="font-size: 20px;">light_mode</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="container">
+    <div style="max-width: 820px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px;">
+
+      <!-- Officer Status Strip -->
+      <section class="card reveal" style="padding: 16px 20px; background-color: var(--surface-2); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--ink);">
+            <span class="material-symbols-outlined" style="color: var(--accent); font-size: 18px;">verified_user</span>
+            <span>Master Registrar</span>
+          </div>
+          <span style="color: var(--border);">|</span>
+          <span class="font-mono" style="font-size: 12px; color: var(--text-muted);">
+            Officer ID: <strong style="color: var(--text);">registrar_admin_01</strong>
+          </span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="badge badge-verified" style="font-size: 11px;">
+            <span style="width: 6px; height: 6px; border-radius: 50%; background-color: var(--status-verified-text);"></span>
+            FIDO2 Hardware Key Verified
+          </span>
+        </div>
+      </section>
+
+      <!-- Page Title -->
+      <section class="reveal">
+        <h1 style="font-size: 32px; color: var(--ink); margin-bottom: 6px;">Registry Administration</h1>
+        <p style="color: var(--text-muted); font-size: 15px;">
+          Authorised university registrar portal for inscribing new credential hashes and nullifying invalid records.
+        </p>
+      </section>
+
+      <!-- Operation Tabs Strip -->
+      <div style="background-color: var(--surface-2); padding: 4px; border-radius: 8px; display: inline-flex; gap: 4px; border: 1px solid var(--border);" class="reveal">
+        <button type="button" id="tabRegisterBtn" class="tab-btn active">
+          <span class="material-symbols-outlined" style="font-size: 18px;">add_circle</span>
+          <span>Register Record</span>
+        </button>
+        <button type="button" id="tabRevokeBtn" class="tab-btn">
+          <span class="material-symbols-outlined" style="font-size: 18px; color: var(--status-mismatch-text);">block</span>
+          <span>Revoke Record</span>
+        </button>
+      </div>
+
+      <!-- TAB 1: Register Record Form -->
+      <section id="registerSection" class="card reveal">
+        <h2 style="font-size: 20px; color: var(--ink); margin-bottom: 8px;">Register New Academic Record</h2>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 24px;">
+          Inscribe an immutable SHA-256 document fingerprint onto the blockchain ledger.
+        </p>
+
+        <form id="adminRegisterForm" style="display: flex; flex-direction: column; gap: 18px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="regRecordId" class="form-label">
+              <span>Record ID</span>
+              <span class="font-mono" style="font-size: 11px; color: var(--text-muted);">Format: CERT-XXXX</span>
+            </label>
+            <input type="text" id="regRecordId" class="form-input font-mono" placeholder="e.g. CERT-205" required>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="regDocType" class="form-label">Document Type</label>
+            <select id="regDocType" class="form-input" style="cursor: pointer;">
+              <option value="1">1 — Degree Certificate</option>
+              <option value="2">2 — Official Transcript</option>
+              <option value="3">3 — Provisional Certificate</option>
+              <option value="4">4 — Academic Award</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="regFileHash" class="form-label">
+              <span>SHA-256 File Digest</span>
+              <span class="font-mono" style="font-size: 11px; color: var(--text-muted);">64 Hex Characters</span>
+            </label>
+            <input type="text" id="regFileHash" class="form-input font-mono" placeholder="e.g. 9f2c41ab... (or drop PDF to compute)" required>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; margin-top: 12px;">
+            <button type="submit" id="submitRegBtn" class="btn btn-primary">
+              <span class="material-symbols-outlined" style="font-size: 18px;">save</span>
+              <span>Register on Ledger</span>
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- TAB 2: Revoke Record Form -->
+      <section id="revokeSection" class="card reveal" style="display: none;">
+        <h2 style="font-size: 20px; color: var(--ink); margin-bottom: 8px;">Revoke Academic Record</h2>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 24px;">
+          Permanently mark a credential as revoked. Per architectural specification D-13, this requires two-step confirmation.
+        </p>
+
+        <form id="adminRevokeForm" style="display: flex; flex-direction: column; gap: 18px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="revRecordId" class="form-label">
+              <span>Target Record ID</span>
+              <span class="font-mono" style="font-size: 11px; color: var(--text-muted);">Existing ID</span>
+            </label>
+            <input type="text" id="revRecordId" class="form-input font-mono" placeholder="e.g. CERT-104" required>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="revReasonCode" class="form-label">Revocation Reason Code</label>
+            <select id="revReasonCode" class="form-input" style="cursor: pointer;">
+              <option value="1">1 — Suspected Fraud or Forgery</option>
+              <option value="2">2 — Issued in Error</option>
+              <option value="3">3 — Superseded by New Version</option>
+              <option value="4">4 — Administrative Nullification</option>
+            </select>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; margin-top: 12px;">
+            <button type="button" id="openRevokeConfirmBtn" class="btn" style="background-color: var(--status-mismatch-text); color: #fff;">
+              <span class="material-symbols-outlined" style="font-size: 18px;">warning</span>
+              <span>Initiate Revocation</span>
+            </button>
+          </div>
+        </form>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Two-Step Confirmation Modal (DECISIONS D-13) -->
+  <div id="confirmModal" class="modal-overlay">
+    <div class="modal-card">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+        <div style="width: 40px; height: 40px; border-radius: 50%; background-color: var(--status-mismatch-bg); color: var(--status-mismatch-text); display: flex; align-items: center; justify-content: center;">
+          <span class="material-symbols-outlined" style="font-size: 24px;">error</span>
+        </div>
+        <div>
+          <h3 style="font-size: 18px; color: var(--ink);">Confirm Revocation</h3>
+          <span style="font-size: 12px; color: var(--text-muted);">Two-Step Registrar Authorization</span>
+        </div>
+      </div>
+
+      <p id="modalConfirmText" style="font-size: 14px; color: var(--text); line-height: 1.5; margin-bottom: 24px;">
+        Are you certain you want to revoke <strong id="modalTargetId" class="font-mono">CERT-104</strong> on the blockchain? This action is permanent and cannot be undone.
+      </p>
+
+      <div style="display: flex; justify-content: flex-end; gap: 12px;">
+        <button type="button" id="modalCancelBtn" class="btn btn-secondary">Cancel</button>
+        <button type="button" id="modalExecuteBtn" class="btn" style="background-color: var(--status-mismatch-text); color: #fff;">
+          Confirm &amp; Revoke
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Global Footer -->
+  <footer class="site-footer">
+    <div class="container" style="display: flex; flex-direction: column; gap: 8px;">
+      <p class="disclaimer-text">
+        <strong>Integrity Notice:</strong> A match shows the file is identical to what was registered. It doesn't prove who issued it or that its contents are true.
+      </p>
+      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-muted); margin-top: 8px; border-top: 1px solid var(--border); padding-top: 8px;">
+        <span>Decentralized Record Verifier (Web3 &amp; AI)</span>
+        <span>Student: Vipul Ahirrao · Mentor: Dr. Deepak Bhadane</span>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module">
+    import './js/app.js';
+
+    const tabRegisterBtn = document.getElementById('tabRegisterBtn');
+    const tabRevokeBtn = document.getElementById('tabRevokeBtn');
+    const registerSection = document.getElementById('registerSection');
+    const revokeSection = document.getElementById('revokeSection');
+
+    tabRegisterBtn.addEventListener('click', () => {
+      tabRegisterBtn.classList.add('active');
+      tabRevokeBtn.classList.remove('active');
+      registerSection.style.display = 'block';
+      revokeSection.style.display = 'none';
+    });
+
+    tabRevokeBtn.addEventListener('click', () => {
+      tabRevokeBtn.classList.add('active');
+      tabRegisterBtn.classList.remove('active');
+      revokeSection.style.display = 'block';
+      registerSection.style.display = 'none';
+    });
+
+    // Confirmation Modal
+    const modal = document.getElementById('confirmModal');
+    const openRevokeConfirmBtn = document.getElementById('openRevokeConfirmBtn');
+    const modalCancelBtn = document.getElementById('modalCancelBtn');
+    const modalExecuteBtn = document.getElementById('modalExecuteBtn');
+    const revRecordIdInput = document.getElementById('revRecordId');
+    const modalTargetId = document.getElementById('modalTargetId');
+
+    openRevokeConfirmBtn.addEventListener('click', () => {
+      const id = revRecordIdInput.value.trim();
+      if (!id) {
+        alert('Please specify the record ID to revoke.');
+        return;
+      }
+      modalTargetId.textContent = id;
+      modal.classList.add('open');
+    });
+
+    modalCancelBtn.addEventListener('click', () => {
+      modal.classList.remove('open');
+    });
+
+    modalExecuteBtn.addEventListener('click', () => {
+      alert(`[Phase 6 Action] Revocation initiated for ${modalTargetId.textContent}. Admin signing will be wired in Phase 6.`);
+      modal.classList.remove('open');
+    });
+  </script>
+</body>
+</html>
+

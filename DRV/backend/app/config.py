@@ -20,7 +20,10 @@ class Settings(BaseSettings):
     # --- Blockchain ---
     rpc_url: str = Field(default="http://127.0.0.1:8545", alias="RPC_URL")
     contract_address: str = Field(default="", alias="CONTRACT_ADDRESS")
-    signer_private_key: str = Field(default="", alias="SIGNER_PRIVATE_KEY")
+    signer_private_key: str = Field(
+        default="0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+        alias="SIGNER_PRIVATE_KEY",
+    )
 
     # --- Model ---
     model_name: str = Field(default="qwen2.5:3b-instruct", alias="MODEL_NAME")
@@ -39,7 +42,11 @@ class Settings(BaseSettings):
     max_upload_mb: int = Field(default=5, alias="MAX_UPLOAD_MB")
 
     # --- Admin ---
-    admin_credentials_hash: str = Field(default="", alias="ADMIN_CREDENTIALS_HASH")
+    # Default is SHA-256 of "admin:admin123"
+    admin_credentials_hash: str = Field(
+        default="bf6b5bdb74c79ece9fc0ad0ac9fb0359f9555d4f35a83b2e6ec69ae99e09603d",
+        alias="ADMIN_CREDENTIALS_HASH",
+    )
 
     # --- Database ---
     db_path: str = Field(default="data/verifier.db", alias="DB_PATH")

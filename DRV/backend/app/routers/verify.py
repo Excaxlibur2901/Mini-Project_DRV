@@ -26,7 +26,11 @@ router = APIRouter(prefix="/api", tags=["verification"])
 
 def get_chain_gateway(settings: Settings = Depends(get_settings)) -> ChainGateway:
     """Dependency provider for ChainGateway."""
-    return ChainGateway(rpc_url=settings.rpc_url, contract_address=settings.contract_address)
+    return ChainGateway(
+        rpc_url=settings.rpc_url,
+        contract_address=settings.contract_address,
+        signer_private_key=settings.signer_private_key,
+    )
 
 
 def get_audit_logger(settings: Settings = Depends(get_settings)) -> AuditLogger:
@@ -171,4 +175,61 @@ async def verify_certificate(
             include_disclaimer=True,
         ),
     )
+
+
+@router.get("/records/{record_id}")
+async def get_record_status(
+    record_id: str,
+    settings: Settings = Depends(get_settings),
+    chain_gateway: ChainGateway = Depends(get_chain_gateway),
+) -> JSONResponse:
+    """
+    Public lookup for record status (API.md §4.3).
+    Returns HTTP 200 for well-formed record IDs whether registered or not.
+    """
+    request_id = generate_request_id()
+    clean_id = record_id.strip().upper()
+    if not settings.id_regex.match(clean_id):
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content=compose_error(
+                request_id=request_id,
+                code="E_ID_FORMAT",
+                message=f"Record ID '{record_id}' does not match pattern {settings.id_pattern}",
+            ),
+        )
+
+    try:
+        res = chain_gateway.verify_hash(clean_id, "0" * 64)
+        exists = res["state"] != "NOT_FOUND"
+        payload = {
+            "state": res["state"],
+            "record_id": clean_id,
+            "exists": exists,
+            "doc_type": res["doc_type"] if exists else None,
+            "registered_hash": res["registered_hash"] if exists else None,
+            "registered_at": res["registered_at"] if exists else None,
+            "revoked": res["revoked"],
+            "revoked_at": res["revoked_at"] if exists else None,
+            "reason": res["reason"] if exists else None,
+        }
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content=compose_response(
+                request_id=request_id,
+                status="ok",
+                result=payload,
+                include_disclaimer=True,
+            ),
+        )
+    except ChainUnavailableError as e:
+        return JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content=compose_error(
+                request_id=request_id,
+                code=e.code,
+                message="The blockchain isn't reachable right now. This isn't a verification result. Please try again.",
+            ),
+        )
+
 

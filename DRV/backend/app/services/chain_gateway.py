@@ -28,6 +28,33 @@ class ChainUnavailableError(Exception):
         self.status_code = 503
 
 
+class DuplicateRecordError(Exception):
+    """Raised when record ID is already registered on chain."""
+
+    def __init__(self, message: str = "Record ID already registered on the blockchain."):
+        super().__init__(message)
+        self.code = "E_DUPLICATE"
+        self.status_code = 409
+
+
+class RecordNotFoundError(Exception):
+    """Raised when record ID is not found on chain."""
+
+    def __init__(self, message: str = "Record ID was not found on the blockchain."):
+        super().__init__(message)
+        self.code = "E_NOT_FOUND"
+        self.status_code = 404
+
+
+class TransactionFailedError(Exception):
+    """Raised when on-chain transaction execution fails or reverts."""
+
+    def __init__(self, message: str = "Transaction execution failed or reverted."):
+        super().__init__(message)
+        self.code = "E_TX_FAILED"
+        self.status_code = 502
+
+
 # Mapping for revocation reason codes (DATABASE.md §3.4)
 REASON_CODE_MAP: dict[int, str] = {
     1: "issued_in_error",
@@ -58,10 +85,12 @@ class ChainGateway:
         self,
         rpc_url: str = "http://127.0.0.1:8545",
         contract_address: str = "",
+        signer_private_key: str = "",
         abi: list[dict[str, Any]] | None = None,
     ):
         self.rpc_url = rpc_url
         self.contract_address = contract_address
+        self.signer_private_key = signer_private_key
         self._abi = abi or self._load_default_abi()
         self._web3: Web3 | None = None
         self._contract = None
@@ -220,4 +249,132 @@ class ChainGateway:
             return {"exists": exists, "revoked": revoked}
         except (Web3Exception, OSError) as e:
             raise ChainUnavailableError(f"RPC failure in isRevoked: {e}") from e
+
+    def register_record(
+        self,
+        record_id: str,
+        file_hash_hex: str,
+        doc_type: int,
+        private_key: str | None = None,
+    ) -> dict[str, Any]:
+        """
+        Execute registerRecord on-chain.
+        Raises DuplicateRecordError (409) if already exists,
+        or ChainUnavailableError (503) if RPC fails.
+        """
+        clean_hex = file_hash_hex.lower().replace("0x", "")
+        if len(clean_hex) != 64:
+            raise ValueError("Invalid hash length: expected 64 hex characters")
+        hash_bytes = bytes.fromhex(clean_hex)
+
+        w3 = self.get_web3()
+        contract = self.get_contract()
+        pk = private_key or self.signer_private_key
+        if not pk:
+            raise ChainUnavailableError("Signer private key is not configured for admin writes.")
+
+        # Pre-check existence for clean 409
+        status = self.is_revoked(record_id)
+        if status["exists"]:
+            raise DuplicateRecordError(f"Record ID '{record_id}' is already registered.")
+
+        try:
+            account = w3.eth.account.from_key(pk)
+            nonce = w3.eth.get_transaction_count(account.address)
+
+            tx = contract.functions.registerRecord(
+                record_id, hash_bytes, doc_type
+            ).build_transaction({
+                "from": account.address,
+                "nonce": nonce,
+                "gas": 300000,
+                "gasPrice": w3.eth.gas_price,
+            })
+
+            signed = w3.eth.account.sign_transaction(tx, private_key=pk)
+            tx_hash = w3.eth.send_raw_transaction(signed.raw_transaction)
+            receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=15)
+
+            if receipt.status != 1:
+                raise TransactionFailedError("registerRecord transaction reverted on chain.")
+
+            return {
+                "operation": "register",
+                "record_id": record_id,
+                "registered_hash": clean_hex,
+                "tx_hash": tx_hash.hex(),
+                "tx_status": "confirmed",
+                "block_number": receipt.blockNumber,
+            }
+
+        except (DuplicateRecordError, TransactionFailedError):
+            raise
+        except Exception as e:
+            raise ChainUnavailableError(f"Registration failed: {e}") from e
+
+    def revoke_record(
+        self,
+        record_id: str,
+        reason_code: int = 1,
+        private_key: str | None = None,
+    ) -> dict[str, Any]:
+        """
+        Execute revokeRecord on-chain.
+        Raises RecordNotFoundError (404) if record does not exist.
+        Idempotent: if already revoked, returns confirmed without submitting new tx.
+        """
+        w3 = self.get_web3()
+        contract = self.get_contract()
+        pk = private_key or self.signer_private_key
+        if not pk:
+            raise ChainUnavailableError("Signer private key is not configured for admin writes.")
+
+        # Check existence and current status
+        status = self.is_revoked(record_id)
+        if not status["exists"]:
+            raise RecordNotFoundError(f"Record ID '{record_id}' does not exist on the ledger.")
+
+        if status["revoked"]:
+            # Already revoked, idempotent success
+            return {
+                "operation": "revoke",
+                "record_id": record_id,
+                "tx_hash": None,
+                "tx_status": "confirmed",
+                "block_number": None,
+                "note": "Record was already revoked.",
+            }
+
+        try:
+            account = w3.eth.account.from_key(pk)
+            nonce = w3.eth.get_transaction_count(account.address)
+
+            tx = contract.functions.revokeRecord(
+                record_id, reason_code
+            ).build_transaction({
+                "from": account.address,
+                "nonce": nonce,
+                "gas": 200000,
+                "gasPrice": w3.eth.gas_price,
+            })
+
+            signed = w3.eth.account.sign_transaction(tx, private_key=pk)
+            tx_hash = w3.eth.send_raw_transaction(signed.raw_transaction)
+            receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=15)
+
+            if receipt.status != 1:
+                raise TransactionFailedError("revokeRecord transaction reverted on chain.")
+
+            return {
+                "operation": "revoke",
+                "record_id": record_id,
+                "tx_hash": tx_hash.hex(),
+                "tx_status": "confirmed",
+                "block_number": receipt.blockNumber,
+            }
+
+        except (RecordNotFoundError, TransactionFailedError):
+            raise
+        except Exception as e:
+            raise ChainUnavailableError(f"Revocation failed: {e}") from e
 

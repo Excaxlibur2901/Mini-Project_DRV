@@ -4,10 +4,12 @@ FastAPI application entry point for Decentralized Record Verifier.
 
 from __future__ import annotations
 
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
-from app.routers import health, query, verify
+from app.routers import admin, health, query, results, verify
 
 
 def create_app() -> FastAPI:
@@ -31,6 +33,13 @@ def create_app() -> FastAPI:
     app.include_router(health.router)
     app.include_router(verify.router)
     app.include_router(query.router)
+    app.include_router(admin.router)
+    app.include_router(results.router)
+
+    # Mount static frontend
+    frontend_dir = Path(__file__).resolve().parent.parent.parent / "frontend" / "app"
+    if frontend_dir.exists():
+        app.mount("/", StaticFiles(directory=str(frontend_dir), html=True), name="frontend")
 
     return app
 

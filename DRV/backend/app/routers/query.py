@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import time
 from typing import Literal
-from fastapi import APIRouter, Depends, Header, Request, status
+from fastapi import APIRouter, Cookie, Depends, Header, Request, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
@@ -18,7 +18,9 @@ from app.config import Settings, get_settings
 from app.nlp.baseline import RulesParser
 from app.nlp.parser_interface import BaseParser
 from app.nlp.slm_parser import ModelUnavailableError, SLMParser
+from app.routers.admin import get_auth_service
 from app.routers.verify import get_audit_logger, get_chain_gateway
+from app.services.admin_auth import AdminAuthService
 from app.services.audit import AuditLogger
 from app.services.chain_gateway import ChainGateway, ChainUnavailableError
 from app.services.response_composer import (
@@ -56,9 +58,12 @@ def resolve_parser(parser_type: str, settings: Settings) -> BaseParser:
 @router.post("/query")
 async def query_records(
     body: QueryRequest,
+    drv_session: str | None = Cookie(default=None),
+    authorization: str | None = Header(default=None),
     settings: Settings = Depends(get_settings),
     chain_gateway: ChainGateway = Depends(get_chain_gateway),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    auth_service: AdminAuthService = Depends(get_auth_service),
 ) -> JSONResponse:
     """
     Handle natural language inquiries.
@@ -67,6 +72,12 @@ async def query_records(
     start_time = time.perf_counter()
     request_id = generate_request_id()
     raw_text = body.text.strip()
+
+    # Determine actor role from session (D-12)
+    token = drv_session
+    if not token and authorization and authorization.startswith("Bearer "):
+        token = authorization.split("Bearer ", 1)[1].strip()
+    user_role = "admin" if auth_service.validate_session(token) else "anonymous"
 
     # 1. Select parser and parse text into untrusted draft
     parser = resolve_parser(body.parser, settings)
@@ -83,6 +94,7 @@ async def query_records(
             route="/api/query",
             http_method="POST",
             parser_type=parser.parser_type,
+            actor_role=user_role,
             http_status=e.status_code,
             latency_ms=latency_ms,
             outcome="error",
@@ -103,6 +115,7 @@ async def query_records(
             route="/api/query",
             http_method="POST",
             parser_type=parser.parser_type,
+            actor_role=user_role,
             http_status=500,
             latency_ms=latency_ms,
             outcome="error",
@@ -121,7 +134,7 @@ async def query_records(
     decision = validate_draft(
         raw_input=raw_draft_payload,
         user_raw_text=raw_text,
-        user_role="anonymous",  # Role comes from session in Phase 6
+        user_role=user_role,
         id_pattern=settings.id_pattern,
     )
 
@@ -141,6 +154,7 @@ async def query_records(
             route="/api/query",
             http_method="POST",
             parser_type=parser.parser_type,
+            actor_role=user_role,
             intent=decision.draft.intent if decision.draft else None,
             outcome=outcome,
             error_code=decision.error_code,
@@ -178,8 +192,61 @@ async def query_records(
             ),
         )
 
-    # 4. Execute approved read-only contract call
+    # 4. Execute approved read-only contract call or admin confirmation
     approved_draft = decision.draft
+
+    # Privileged action from logged-in admin: two-step confirmation (DECISIONS D-13)
+    if approved_draft.intent == "revoke_record":
+        token = auth_service.create_confirmation_token(
+            action="revoke", record_id=approved_draft.record_id, reason_code=1
+        )
+        latency_ms = int((time.perf_counter() - start_time) * 1000)
+        audit_logger.log_request(
+            request_id=request_id,
+            route="/api/query",
+            http_method="POST",
+            parser_type=parser.parser_type,
+            actor_role=user_role,
+            intent=approved_draft.intent,
+            outcome="ok",
+            http_status=200,
+            latency_ms=latency_ms,
+            stages=handling_info["stages"],
+        )
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content=compose_response(
+                request_id=request_id,
+                status="confirmation_required",
+                result={
+                    "action": "revoke",
+                    "record_id": approved_draft.record_id,
+                    "summary": f"Revoke {approved_draft.record_id}? This cannot be undone.",
+                    "confirmation_token": token,
+                    "expires_in_seconds": 60,
+                },
+                handling=handling_info,
+                include_disclaimer=False,
+            ),
+        )
+
+    if approved_draft.intent == "register_record":
+        latency_ms = int((time.perf_counter() - start_time) * 1000)
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content=compose_response(
+                request_id=request_id,
+                status="ok",
+                result={
+                    "intent": approved_draft.intent,
+                    "record_id": approved_draft.record_id,
+                    "answer_text": f"To register '{approved_draft.record_id}', please upload the document via the Admin Registry Portal.",
+                },
+                handling=handling_info,
+                include_disclaimer=False,
+            ),
+        )
+
     try:
         if approved_draft.intent in ("verify_record", "check_status"):
             is_rev_res = chain_gateway.is_revoked(approved_draft.record_id)
@@ -231,6 +298,7 @@ async def query_records(
             route="/api/query",
             http_method="POST",
             parser_type=parser.parser_type,
+            actor_role=user_role,
             intent=approved_draft.intent,
             outcome="error",
             error_code=e.code,
@@ -255,6 +323,7 @@ async def query_records(
         route="/api/query",
         http_method="POST",
         parser_type=parser.parser_type,
+        actor_role=user_role,
         intent=approved_draft.intent,
         outcome="ok",
         http_status=200,

@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Record Verifier — Public Credential Verification</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="top-nav">
+    <div class="container top-nav-inner">
+      <a href="index.html" class="brand">
+        <div class="brand-seal-icon">
+          <span class="material-symbols-outlined" style="font-size: 20px;">verified</span>
+        </div>
+        <span>Record Verifier</span>
+      </a>
+
+      <nav class="nav-links">
+        <a href="index.html" class="nav-link active">Verify</a>
+        <a href="ask.html" class="nav-link">Ask</a>
+        <a href="admin.html" class="nav-link">Admin</a>
+        <a href="results.html" class="nav-link">Results</a>
+      </nav>
+
+      <button class="theme-toggle-btn" aria-label="Toggle theme">
+        <span class="material-symbols-outlined" style="font-size: 20px;">light_mode</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="container">
+    <div style="max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 32px;">
+
+      <!-- Header Section -->
+      <section class="reveal">
+        <div style="display: flex; align-items: center; gap: 8px; color: var(--accent); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">
+          <span style="width: 6px; height: 6px; border-radius: 50%; background-color: var(--accent);"></span>
+          <span>Public Ledger Verification</span>
+        </div>
+        <h1 style="font-size: 34px; color: var(--ink); margin-bottom: 8px; line-height: 1.2;">
+          Check a certificate against its registered record
+        </h1>
+        <p style="color: var(--text-muted); font-size: 16px;">
+          Compare the cryptographic fingerprint of an issued academic credential against its immutable blockchain anchor.
+        </p>
+      </section>
+
+      <!-- Verification Form Card -->
+      <section class="card reveal">
+        <form id="verifyForm">
+          
+          <!-- Record ID Input -->
+          <div class="form-group">
+            <label for="recordId" class="form-label">
+              <span>Record ID</span>
+              <span class="font-mono" style="font-size: 11px; color: var(--text-muted); font-weight: 400;">Format: CERT-XXXX</span>
+            </label>
+            <input type="text" id="recordId" class="form-input font-mono" placeholder="e.g. CERT-101" value="CERT-101" required>
+            <span style="font-size: 12px; color: var(--text-muted);">
+              The unique identifier printed on the official certificate footer.
+            </span>
+          </div>
+
+          <!-- File Upload Dropzone -->
+          <div class="form-group">
+            <label class="form-label">Credential File (PDF)</label>
+            <div id="dropzone" class="dropzone">
+              <input type="file" id="fileInput" accept=".pdf" style="display: none;">
+              <div style="width: 44px; height: 44px; border-radius: 50%; background-color: var(--surface); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; color: var(--text-muted); border: 1px solid var(--border);">
+                <span class="material-symbols-outlined" style="font-size: 24px;">upload_file</span>
+              </div>
+              <p style="font-weight: 500; color: var(--text); margin-bottom: 4px;">
+                Drop a PDF here or <span style="color: var(--accent); text-decoration: underline;">browse</span>
+              </p>
+              <p class="font-mono" style="font-size: 12px; color: var(--text-muted);">
+                Streaming SHA-256 verification • PDF only (Max 5 MB)
+              </p>
+
+              <!-- Selected File Chip -->
+              <div id="fileChip" class="dropzone-file-chip" style="display: none;">
+                <span class="material-symbols-outlined" style="color: var(--accent); font-size: 20px;">description</span>
+                <div>
+                  <div id="fileName" class="font-mono" style="font-size: 13px; font-weight: 600; color: var(--text);">certificate.pdf</div>
+                  <div id="fileMeta" class="font-mono" style="font-size: 11px; color: var(--text-muted);">0 KB • Client Hash Computed</div>
+                </div>
+                <button type="button" id="removeFileBtn" style="background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 4px; margin-left: 8px;">
+                  <span class="material-symbols-outlined" style="font-size: 18px;">close</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Row -->
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 24px;">
+            <span style="font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+              <span class="material-symbols-outlined" style="font-size: 16px;">lock</span>
+              Document contents never leave your device
+            </span>
+
+            <button type="submit" id="submitBtn" class="btn btn-primary">
+              <span class="material-symbols-outlined" style="font-size: 18px;">task_alt</span>
+              <span>Verify file</span>
+            </button>
+          </div>
+
+        </form>
+      </section>
+
+      <!-- Verification Result Card (Hidden until response) -->
+      <section id="resultCard" class="card reveal" style="display: none;">
+        
+        <!-- Header with Seal & Badge -->
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border);">
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <div id="sealIcon" class="seal verified">
+              <span class="material-symbols-outlined" style="font-size: 28px;">check</span>
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                <h2 id="resultTitle" style="font-size: 24px; color: var(--ink);">Verified</h2>
+                <span id="resultBadge" class="badge badge-verified">Matches registered record</span>
+              </div>
+              <p id="resultDescription" style="color: var(--text); font-size: 15px;">
+                This file matches the registered record precisely byte-for-byte.
+              </p>
+            </div>
+          </div>
+
+          <button type="button" class="btn btn-secondary" onclick="window.print()" style="font-size: 13px; padding: 0 16px; height: 38px;">
+            <span class="material-symbols-outlined" style="font-size: 16px;">print</span>
+            <span>Proof Slip</span>
+          </button>
+        </div>
+
+        <!-- Hash Inspection Side-by-Side Blocks -->
+        <div id="hashesSection" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 24px;">
+          
+          <!-- Computed Hash Block -->
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 12px; color: var(--text-muted); font-weight: 500;">
+              <span>COMPUTED FROM YOUR FILE</span>
+              <span class="font-mono" style="color: var(--accent);">SHA-256</span>
+            </div>
+            <div class="hash-block">
+              <div id="computedHashDisplay" class="font-mono" style="font-size: 13px; color: var(--text); line-height: 1.5;"></div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; border-top: 1px solid var(--border); padding-top: 6px;">
+                <span style="font-size: 11px; color: var(--text-muted);">64 hex characters</span>
+                <button type="button" id="copyComputedHashBtn" class="btn btn-secondary" style="height: 28px; padding: 0 10px; font-size: 12px;">Copy</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Registered Hash Block -->
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 12px; color: var(--text-muted); font-weight: 500;">
+              <span>REGISTERED ON BLOCKCHAIN</span>
+              <span class="font-mono" style="color: var(--accent);">IMMUTABLE ANCHOR</span>
+            </div>
+            <div class="hash-block">
+              <div id="registeredHashDisplay" class="font-mono" style="font-size: 13px; color: var(--text); line-height: 1.5;"></div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; border-top: 1px solid var(--border); padding-top: 6px;">
+                <span id="matchStatusLabel" style="font-size: 11px; color: var(--status-verified-text); font-weight: 600;">Match Verified</span>
+                <button type="button" id="copyRegisteredHashBtn" class="btn btn-secondary" style="height: 28px; padding: 0 10px; font-size: 12px;">Copy</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Archival Metadata Strip -->
+        <div id="metaStrip" style="background-color: var(--surface-2); border-radius: 6px; padding: 14px 18px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 16px; font-size: 13px;">
+          <div>
+            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Record ID</div>
+            <div id="metaRecordId" class="font-mono" style="font-weight: 600; color: var(--ink); margin-top: 2px;">CERT-101</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Registered At</div>
+            <div id="metaRegisteredAt" class="font-mono" style="color: var(--text); margin-top: 2px;">—</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Issuer Account</div>
+            <div id="metaIssuer" class="font-mono" style="color: var(--text); margin-top: 2px; overflow: hidden; text-overflow: ellipsis;">—</div>
+          </div>
+        </div>
+
+        <!-- In-card Integrity Disclaimer -->
+        <div style="border-top: 1px solid var(--border); padding-top: 12px; font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 8px;">
+          <span class="material-symbols-outlined" style="font-size: 16px; color: var(--accent);">info</span>
+          <span id="cardDisclaimer">A match shows the file is identical to what was registered. It doesn't prove who issued it or that its contents are true.</span>
+        </div>
+
+      </section>
+
+      <!-- System Verification Legend Strip -->
+      <footer style="margin-top: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <span style="font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">
+            Verification Outcomes:
+          </span>
+          <span class="font-mono" style="font-size: 11px; color: var(--text-muted);">Deterministic Pure Pipeline</span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <span class="badge badge-verified"><span class="material-symbols-outlined" style="font-size: 14px;">check</span> Verified</span>
+          <span class="badge badge-mismatch"><span class="material-symbols-outlined" style="font-size: 14px;">close</span> Mismatch</span>
+          <span class="badge badge-revoked"><span class="material-symbols-outlined" style="font-size: 14px;">block</span> Revoked</span>
+          <span class="badge badge-notfound"><span class="material-symbols-outlined" style="font-size: 14px;">search_off</span> Not found</span>
+          <span class="badge badge-clarify"><span class="material-symbols-outlined" style="font-size: 14px;">help_outline</span> Needs clarification</span>
+        </div>
+      </footer>
+
+    </div>
+  </main>
+
+  <!-- Global Footer -->
+  <footer class="site-footer">
+    <div class="container" style="display: flex; flex-direction: column; gap: 8px;">
+      <p class="disclaimer-text">
+        <strong>Integrity Notice:</strong> A match shows the file is identical to what was registered. It doesn't prove who issued it or that its contents are true.
+      </p>
+      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-muted); margin-top: 8px; border-top: 1px solid var(--border); padding-top: 8px;">
+        <span>Decentralized Record Verifier (Web3 &amp; AI)</span>
+        <span>Student: Vipul Ahirrao · Mentor: Dr. Deepak Bhadane</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Page Logic Script -->
+  <script type="module">
+    import { verifyFile } from './js/api.js';
+    import { computeClientSHA256, formatHashChunks, resolveHashEffect } from './js/hash-effect.js';
+    import { copyToClipboard } from './js/app.js';
+
+    let selectedFile = null;
+    let clientComputedHash = '';
+
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('fileInput');
+    const fileChip = document.getElementById('fileChip');
+    const fileName = document.getElementById('fileName');
+    const fileMeta = document.getElementById('fileMeta');
+    const removeFileBtn = document.getElementById('removeFileBtn');
+    const verifyForm = document.getElementById('verifyForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const resultCard = document.getElementById('resultCard');
+
+    // Trigger file input
+    dropzone.addEventListener('click', (e) => {
+      if (e.target.closest('#removeFileBtn')) return;
+      fileInput.click();
+    });
+
+    // Drag and drop handlers
+    dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzone.classList.add('dragover');
+    });
+
+    dropzone.addEventListener('dragleave', () => {
+      dropzone.classList.remove('dragover');
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handleFileSelection(e.dataTransfer.files[0]);
+      }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) {
+        handleFileSelection(e.target.files[0]);
+      }
+    });
+
+    removeFileBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectedFile = null;
+      clientComputedHash = '';
+      fileInput.value = '';
+      fileChip.style.display = 'none';
+    });
+
+    async function handleFileSelection(file) {
+      if (!file.name.toLowerCase().endsWith('.pdf')) {
+        alert('Please select a valid PDF credential file.');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File size exceeds the 5 MB limit.');
+        return;
+      }
+
+      selectedFile = file;
+      fileName.textContent = file.name;
+      fileMeta.textContent = `${(file.size / 1024).toFixed(1)} KB • Computing SHA-256...`;
+      fileChip.style.display = 'inline-flex';
+
+      try {
+        clientComputedHash = await computeClientSHA256(file);
+        fileMeta.textContent = `${(file.size / 1024).toFixed(1)} KB • SHA-256: ${clientComputedHash.slice(0, 10)}... Ready`;
+      } catch (err) {
+        fileMeta.textContent = `${(file.size / 1024).toFixed(1)} KB • Ready for upload`;
+      }
+    }
+
+    // Submit Verification
+    verifyForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const recordId = document.getElementById('recordId').value.trim();
+
+      if (!recordId) {
+        alert('Please enter a Record ID (e.g. CERT-101).');
+        return;
+      }
+      if (!selectedFile) {
+        alert('Please drop or select a PDF certificate to verify.');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin" style="font-size: 18px;">refresh</span><span>Verifying...</span>';
+
+      try {
+        const response = await verifyFile(selectedFile, recordId);
+        displayResult(response, recordId);
+      } catch (err) {
+        displayServiceError(err.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 18px;">task_alt</span><span>Verify file</span>';
+      }
+    });
+
+    function displayResult(res, recordId) {
+      resultCard.style.display = 'block';
+      resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+      const data = res.data;
+      const status = data.status;
+      const result = data.result || {};
+
+      const sealIcon = document.getElementById('sealIcon');
+      const resultTitle = document.getElementById('resultTitle');
+      const resultBadge = document.getElementById('resultBadge');
+      const resultDescription = document.getElementById('resultDescription');
+      const computedHashDisplay = document.getElementById('computedHashDisplay');
+      const registeredHashDisplay = document.getElementById('registeredHashDisplay');
+      const matchStatusLabel = document.getElementById('matchStatusLabel');
+      const metaStrip = document.getElementById('metaStrip');
+
+      // Reset seal class
+      sealIcon.className = 'seal';
+
+      if (status === 'ok') {
+        const outcome = result.status; // VERIFIED, MISMATCH, NOT_FOUND, REVOKED
+        
+        computedHashDisplay.textContent = formatHashChunks(result.computed_hash || clientComputedHash);
+        registeredHashDisplay.textContent = formatHashChunks(result.registered_hash || '0'.repeat(64));
+
+        document.getElementById('metaRecordId').textContent = result.record_id || recordId;
+        document.getElementById('metaRegisteredAt').textContent = result.registered_at ? new Date(result.registered_at * 1000).toUTCString() : 'N/A';
+        document.getElementById('metaIssuer').textContent = result.issuer || 'N/A';
+
+        if (outcome === 'VERIFIED') {
+          sealIcon.classList.add('verified');
+          sealIcon.innerHTML = '<span class="material-symbols-outlined" style="font-size: 28px;">check</span>';
+          resultTitle.textContent = 'Verified';
+          resultBadge.className = 'badge badge-verified';
+          resultBadge.textContent = 'Matches registered record';
+          resultDescription.textContent = 'This file matches the registered record precisely byte-for-byte.';
+          matchStatusLabel.textContent = 'Identical Match';
+          matchStatusLabel.style.color = 'var(--status-verified-text)';
+        } else if (outcome === 'MISMATCH') {
+          sealIcon.classList.add('mismatch');
+          sealIcon.innerHTML = '<span class="material-symbols-outlined" style="font-size: 28px;">close</span>';
+          resultTitle.textContent = 'Mismatch';
+          resultBadge.className = 'badge badge-mismatch';
+          resultBadge.textContent = 'File differs from registered version';
+          resultDescription.textContent = "This file doesn't match the registered version. It may have been edited or re-saved.";
+          matchStatusLabel.textContent = 'Hash Mismatch';
+          matchStatusLabel.style.color = 'var(--status-mismatch-text)';
+        } else if (outcome === 'REVOKED') {
+          sealIcon.classList.add('revoked');
+          sealIcon.innerHTML = '<span class="material-symbols-outlined" style="font-size: 28px;">block</span>';
+          resultTitle.textContent = 'Revoked';
+          resultBadge.className = 'badge badge-revoked';
+          resultBadge.textContent = 'Record Revoked';
+          resultDescription.textContent = `This record was revoked${result.revocation_reason ? ' (' + result.revocation_reason + ')' : ''}.`;
+          matchStatusLabel.textContent = 'Revoked on Ledger';
+          matchStatusLabel.style.color = 'var(--status-revoked-text)';
+        } else if (outcome === 'NOT_FOUND') {
+          sealIcon.classList.add('notfound');
+          sealIcon.innerHTML = '<span class="material-symbols-outlined" style="font-size: 28px;">search_off</span>';
+          resultTitle.textContent = 'Not Found';
+          resultBadge.className = 'badge badge-notfound';
+          resultBadge.textContent = 'Record not found';
+          resultDescription.textContent = "We couldn't find a record with that ID in the registry.";
+          matchStatusLabel.textContent = 'Unregistered';
+          matchStatusLabel.style.color = 'var(--status-notfound-text)';
+        }
+      } else {
+        // Error handling
+        displayServiceError(data.error?.message || 'Verification rejected.');
+      }
+    }
+
+    function displayServiceError(message) {
+      resultCard.style.display = 'block';
+      const sealIcon = document.getElementById('sealIcon');
+      sealIcon.className = 'seal mismatch';
+      sealIcon.innerHTML = '<span class="material-symbols-outlined" style="font-size: 28px;">error</span>';
+      document.getElementById('resultTitle').textContent = 'Service Error';
+      document.getElementById('resultBadge').className = 'badge badge-mismatch';
+      document.getElementById('resultBadge').textContent = 'Service Unavailable';
+      document.getElementById('resultDescription').textContent = message;
+      document.getElementById('hashesSection').style.display = 'none';
+      document.getElementById('metaStrip').style.display = 'none';
+    }
+
+    document.getElementById('copyComputedHashBtn').addEventListener('click', (e) => {
+      const hash = document.getElementById('computedHashDisplay').textContent.replace(/\s+/g, '');
+      copyToClipboard(hash, e.target);
+    });
+
+    document.getElementById('copyRegisteredHashBtn').addEventListener('click', (e) => {
+      const hash = document.getElementById('registeredHashDisplay').textContent.replace(/\s+/g, '');
+      copyToClipboard(hash, e.target);
+    });
+  </script>
+</body>
+</html>
+

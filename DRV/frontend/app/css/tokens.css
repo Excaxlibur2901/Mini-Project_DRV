@@ -1,0 +1,69 @@
+/* DESIGN.md Design Tokens */
+:root {
+  /* Surfaces & Paper (Light Theme) */
+  --bg: #F6F4EF;
+  --surface: #FFFFFF;
+  --surface-2: #EFECE4;
+  --surface-container-low: #F5F3EE;
+  --surface-container-high: #EAE8E3;
+  --border: #DDD8CC;
+  --text: #1F2933;
+  --text-muted: #5B6670;
+  
+  /* Brand & Accent */
+  --ink: #1B2A41;
+  --accent: #285F5B;
+  --accent-hover: #1F4D49;
+  --accent-soft: #E2EEEC;
+  --primary: #05152B;
+  
+  /* Status Colors */
+  --status-verified-text: #2F6B4A;
+  --status-verified-bg: #E5F0E9;
+  --status-mismatch-text: #8E3A31;
+  --status-mismatch-bg: #F5E1DD;
+  --status-revoked-text: #7A5410;
+  --status-revoked-bg: #F6ECD6;
+  --status-notfound-text: #34506B;
+  --status-notfound-bg: #E4EBF2;
+  --status-clarify-text: #5B6670;
+  --status-clarify-bg: #ECEAE3;
+  
+  /* Motion Tokens */
+  --dur-fast: 120ms;
+  --dur-base: 220ms;
+  --dur-slow: 420ms;
+  --dur-story: 900ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* Dark Theme Override */
+[data-theme="dark"] {
+  --bg: #14181D;
+  --surface: #1B2127;
+  --surface-2: #222A31;
+  --surface-container-low: #192026;
+  --surface-container-high: #2A333C;
+  --border: #2E373F;
+  --text: #E7E4DC;
+  --text-muted: #9AA4AD;
+  
+  --ink: #C9D3E0;
+  --accent: #6FA8A1;
+  --accent-hover: #86BBB4;
+  --accent-soft: #1E2F2E;
+  --primary: #8291AD;
+  
+  --status-verified-text: #66C28E;
+  --status-verified-bg: #132E20;
+  --status-mismatch-text: #F28B82;
+  --status-mismatch-bg: #3C1C19;
+  --status-revoked-text: #FDD663;
+  --status-revoked-bg: #382C10;
+  --status-notfound-text: #8AB4F8;
+  --status-notfound-bg: #18283E;
+  --status-clarify-text: #C4C7C5;
+  --status-clarify-bg: #272B2E;
+}
+
