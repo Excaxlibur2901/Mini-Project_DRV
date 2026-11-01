@@ -1,0 +1,33 @@
+{
+  "type": "object",
+  "properties": {
+    "intent": {
+      "type": "string",
+      "enum": [
+        "verify_record",
+        "check_status",
+        "get_metadata",
+        "register_record",
+        "revoke_record",
+        "unknown"
+      ]
+    },
+    "record_id": {
+      "type": ["string", "null"]
+    },
+    "check_revocation": {
+      "type": "boolean"
+    },
+    "clarification_needed": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "intent",
+    "record_id",
+    "check_revocation",
+    "clarification_needed"
+  ],
+  "additionalProperties": false
+}
+

@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     model_endpoint: str = Field(
         default="http://localhost:11434", alias="MODEL_ENDPOINT"
     )
+    model_timeout_seconds: float = Field(default=120.0, alias="MODEL_TIMEOUT_SECONDS")
     nlp_retry_on_invalid: bool = Field(default=False, alias="NLP_RETRY_ON_INVALID")
 
     # --- Validation ---
