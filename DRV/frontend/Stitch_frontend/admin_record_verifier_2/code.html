@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="web_standard" name="shell-type"/>
+<title>Record Verifier</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500;600&amp;family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+    @layer base {
+      html, body { margin: 0; padding: 0; }
+      body { overscroll-behavior: none; }
+      main > :first-child { margin-top: 0 !important; }
+      main > :last-child { margin-bottom: 0 !important; }
+    }
+    ::-webkit-scrollbar { display: none; }
+  </style>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "bg-dark": "#14181D",
+            "card-dark": "#1B2227",
+            "border-dark": "#2E373F",
+            "inset-dark": "#222A31",
+            "row-alt-dark": "#1E252C",
+            "text-primary": "#E7E4DC",
+            "text-title": "#C9D3E0",
+            "text-muted": "#9AA4AD",
+            "accent": "#6FA8A1",
+            "role-bg": "#1E2F2E",
+            "btn-danger": "#5A2D28",
+            "btn-danger-hover": "#6E3630",
+            "btn-danger-text": "#F29E94",
+            "status-revoked-bg": "#362810",
+            "status-revoked-text": "#E5BA6C",
+            "status-anchored-bg": "#183325",
+            "status-anchored-text": "#7CD5A7"
+          },
+          fontFamily: {
+            "code-sm": ["JetBrains Mono"],
+            "code-md": ["JetBrains Mono"],
+            "body-sm": ["IBM Plex Sans"],
+            "body-md": ["IBM Plex Sans"],
+            "body-lg": ["IBM Plex Sans"],
+            "headline-lg": ["Libre Caslon Text"],
+            "headline-md": ["IBM Plex Sans"],
+            "display": ["Libre Caslon Text"],
+            "label-sm": ["IBM Plex Sans"],
+            "label-md": ["IBM Plex Sans"]
+          },
+          spacing: {
+            "space-xs": "0.25rem",
+            "space-sm": "0.5rem",
+            "space-md": "0.75rem",
+            "space-lg": "1rem",
+            "space-xl": "1.5rem",
+            "space-2xl": "2rem",
+            "space-3xl": "3rem",
+            "margin": "1.5rem"
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-bg-dark font-body-md text-text-primary min-h-screen flex flex-col antialiased">
+<!-- Top Navigation Header -->
+<header class="fixed top-0 left-0 right-0 z-50 bg-card-dark/95 border-b border-border-dark backdrop-blur-md">
+<div class="max-w-[1120px] mx-auto px-margin h-16 flex items-center justify-between gap-space-lg">
+<div class="flex items-center gap-space-xl">
+<a class="flex items-center gap-space-md group" data-path="verify" href="#">
+<div class="w-9 h-9 rounded-full bg-role-bg border border-border-dark flex items-center justify-center text-accent">
+<span class="material-symbols-outlined text-[20px]">verified</span>
+</div>
+<span class="font-headline-md font-semibold text-text-title tracking-tight text-[18px]">Record Verifier</span>
+</a>
+<nav class="hidden md:flex items-center gap-1 p-1 bg-inset-dark border border-border-dark rounded-xl">
+<a class="px-space-md py-1.5 font-label-md text-[13px] text-text-muted hover:text-text-primary transition-colors rounded-lg" data-path="verify" href="#">Verify</a>
+<a class="px-space-md py-1.5 font-label-md text-[13px] text-text-muted hover:text-text-primary transition-colors rounded-lg" data-path="ask" href="#">Ask</a>
+<a aria-current="page" class="px-space-md py-1.5 transition-colors bg-card-dark border border-border-dark text-text-primary font-medium rounded-lg shadow-none" data-path="admin" href="#">Admin</a>
+<a class="px-space-md py-1.5 font-label-md text-[13px] text-text-muted hover:text-text-primary transition-colors rounded-lg" data-path="results" href="#">Results</a>
+</nav>
+</div>
+<div class="flex items-center gap-space-md">
+<button aria-label="Toggle theme" class="w-9 h-9 rounded-lg flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-inset-dark border border-transparent hover:border-border-dark transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]">dark_mode</span>
+</button>
+<div class="hidden sm:flex items-center gap-space-sm pl-space-md py-1 pr-1.5 bg-role-bg border border-border-dark rounded-full">
+<span class="w-2 h-2 rounded-full bg-accent"></span>
+<span class="font-label-sm text-[11px] font-semibold text-accent pr-1">Registrar Office · Admin</span>
+<div class="w-7 h-7 rounded-full bg-card-dark border border-border-dark flex items-center justify-center text-text-primary">
+<span class="material-symbols-outlined text-[16px]">person</span>
+</div>
+</div>
+</div>
+</div>
+</header>
+<main class="w-full flex-1 pt-16">
+<div class="max-w-[1120px] mx-auto px-margin py-space-3xl">
+<div class="flex flex-col w-full">
+<!-- Status & Session Banner -->
+<section class="w-full bg-card-dark border border-border-dark rounded-xl mb-space-2xl overflow-hidden">
+<div class="px-space-xl py-space-md flex flex-col md:flex-row md:items-center justify-between gap-space-md bg-card-dark">
+<!-- Officer Identity -->
+<div class="flex items-center flex-wrap gap-space-md">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-role-bg border border-border-dark text-accent font-label-md text-[13px]">
+<span class="material-symbols-outlined text-[17px]">verified_user</span>
+<span class="font-medium">Officer Role: Master Registrar</span>
+</div>
+<div class="h-4 w-px bg-border-dark hidden sm:block"></div>
+<div class="flex items-center gap-space-xs text-text-primary font-body-sm text-[14px]">
+<span class="text-text-muted">Authenticated:</span>
+<span class="font-code-sm text-[12px] text-text-title px-1.5 py-0.5 rounded bg-inset-dark border border-border-dark font-medium">registrar_oxf_01</span>
+<span class="text-text-muted">· Oxford University Registrar Office (Archival Ledger #401)</span>
+</div>
+</div>
+<!-- Hardware Token Sign-off State & Controls -->
+<div class="flex items-center justify-between md:justify-end gap-space-lg">
+<div class="flex items-center gap-2 px-3 py-1 rounded-lg bg-status-anchored-bg text-status-anchored-text border border-border-dark font-label-sm text-[11px] font-semibold">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-status-anchored-text opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-status-anchored-text"></span>
+</span>
+<span class="tracking-wide">FIDO2 / Hardware Key Active</span>
+</div>
+<button class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-inset-dark border border-border-dark hover:bg-border-dark/60 text-text-primary font-label-md text-[13px] transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px] text-text-muted">logout</span>
+                Sign Out
+              </button>
+</div>
+</div>
+</section>
+<!-- Page Title & Authority Descriptor -->
+<section class="mb-space-2xl">
+<div class="flex flex-col gap-space-xs max-w-3xl">
+<div class="inline-flex items-center gap-2 text-text-muted font-label-sm text-[11px] tracking-widest uppercase font-semibold">
+<span>Gazette Anchor Protocol</span>
+<span>·</span>
+<span>Statutory Authority v2.4</span>
+</div>
+<h1 class="font-headline-lg text-[40px] text-text-title tracking-tight leading-tight font-semibold">
+              Registry Administration
+            </h1>
+<p class="font-body-md text-[16px] text-text-muted mt-1 leading-relaxed">
+              Authenticated portal for authorized university registrars and notary officers to anchor credentials and execute revocations.
+            </p>
+</div>
+</section>
+<!-- Main Workstation: Dual Operation Ledger Panel -->
+<section class="w-full grid grid-cols-1 lg:grid-cols-12 gap-space-xl items-start mb-space-3xl">
+<!-- Primary Operational Module (8 Columns on desktop) -->
+<div class="lg:col-span-8 flex flex-col gap-space-lg">
+<!-- Tab Control Navigator -->
+<div class="bg-card-dark border border-border-dark p-1.5 rounded-xl flex items-center justify-between">
+<div aria-label="Notary Ledger Operations" class="flex items-center gap-1" role="tablist">
+<button aria-selected="false" class="px-space-xl py-2 rounded-lg font-label-md text-[13px] text-text-muted hover:text-text-primary transition-all flex items-center gap-2" id="tab-register-btn" onclick="switchAdminTab('register')" role="tab" type="button">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+<span>Register New Record</span>
+</button>
+<button aria-selected="true" class="px-space-xl py-2 rounded-lg font-label-md text-[13px] bg-inset-dark border border-border-dark text-text-title font-semibold transition-all flex items-center gap-2" id="tab-revoke-btn" onclick="switchAdminTab('revoke')" role="tab" type="button">
+<span class="material-symbols-outlined text-[18px] text-btn-danger-text">block</span>
+<span>Revoke Record</span>
+<span class="px-1.5 py-0.5 rounded-full bg-btn-danger border border-border-dark text-btn-danger-text text-[11px] font-semibold tracking-wide">Ledger Edit</span>
+</button>
+</div>
+<div class="hidden sm:flex items-center gap-2 pr-3 font-label-sm text-[11px] text-text-muted">
+<span class="material-symbols-outlined text-[16px]">lock</span>
+<span>Secured via Oxford KMS</span>
+</div>
+</div>
+<!-- Revoke Tab Panel View (Active Demonstrated State) -->
+<div class="bg-card-dark border border-border-dark rounded-xl p-space-xl relative overflow-hidden" id="panel-revoke">
+<!-- Notary Watermark Graphic Substrate -->
+<div class="absolute -right-8 -top-8 w-44 h-44 rounded-full bg-inset-dark/40 pointer-events-none flex items-center justify-center">
+<span class="material-symbols-outlined text-[100px] text-border-dark/60 select-none">gavel</span>
+</div>
+<div class="relative z-10">
+<div class="mb-space-xl">
+<div class="flex items-center gap-space-sm mb-1">
+<span class="inline-block w-2.5 h-2.5 rounded-full bg-btn-danger-text"></span>
+<h2 class="font-headline-md text-[20px] font-semibold text-text-title">Revoke an Issued Record</h2>
+</div>
+<p class="font-body-sm text-[14px] text-text-muted">
+                    Publish a cryptographically nullified state anchor to the immutable registry ledger.
+                  </p>
+</div>
+<!-- Revocation Form Elements -->
+<div class="space-y-space-lg">
+<!-- Record ID Input -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-[13px] text-text-primary font-medium flex items-center justify-between" for="revoke-record-id">
+<span>Record Identifier (Record ID)</span>
+<span class="font-label-sm text-[11px] text-text-muted">Exact canonical identifier required</span>
+</label>
+<div class="relative">
+<input class="w-full h-11 px-space-md bg-inset-dark border border-border-dark font-code-md text-[14px] text-text-primary rounded-lg focus:outline-none focus:border-accent transition-all font-medium" id="revoke-record-id" type="text" value="CERT-104"/>
+<span class="absolute right-3 top-3 material-symbols-outlined text-text-muted text-[18px]">fingerprint</span>
+</div>
+<p class="font-body-sm text-[14px] text-text-muted">
+                      Matches existing qualification series: <span class="font-code-sm text-[12px] text-text-primary font-semibold">Univ. Oxford · Master of Science (Computer Science) · Matriculation 2021</span>
+</p>
+</div>
+<!-- Revocation Reason Selector -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-[13px] text-text-primary font-medium" for="revoke-reason">
+                      Revocation Reason
+                    </label>
+<div class="relative">
+<select class="w-full h-11 px-space-md bg-inset-dark border border-border-dark font-body-md text-[14px] text-text-primary rounded-lg appearance-none focus:outline-none focus:border-accent transition-all cursor-pointer pr-10" id="revoke-reason">
+<option selected="" value="error">Issued in error</option>
+<option value="superseded">Superseded by reissue</option>
+<option value="fraud">Fraud suspected / Plagiarism</option>
+<option value="sanction">Administrative sanction</option>
+<option value="other">Other statutory ground</option>
+</select>
+<span class="absolute right-3 top-3.5 material-symbols-outlined text-text-muted pointer-events-none text-[20px]">expand_more</span>
+</div>
+<p class="font-body-sm text-[14px] text-text-muted">
+                      Reason category is codified into public ledger event receipt for consumer validation queries.
+                    </p>
+</div>
+<!-- Registrar Note Input -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-[13px] text-text-primary font-medium flex items-center justify-between" for="revoke-note">
+<span>Authorized Registrar Note <span class="text-text-muted font-normal">(Optional public trail)</span></span>
+<span class="font-label-sm text-[11px] text-text-muted">Max 250 characters</span>
+</label>
+<textarea class="w-full p-space-md bg-inset-dark border border-border-dark font-body-sm text-[14px] text-text-primary rounded-lg focus:outline-none focus:border-accent transition-all resize-none leading-relaxed" id="revoke-note" rows="3">Duplicate parchment issuance superseding qualification series ID 48821.</textarea>
+</div>
+<!-- Immediate Form Trigger -->
+<div class="pt-space-sm flex items-center justify-between">
+<div class="flex items-center gap-2 text-status-revoked-text font-label-sm text-[12px]">
+<span class="material-symbols-outlined text-[16px]">warning</span>
+<span>Requires local Hardware Security Module PIN</span>
+</div>
+<button class="px-space-xl py-2.5 rounded-lg bg-btn-danger hover:bg-btn-danger-hover text-btn-danger-text border border-border-dark font-label-md text-[13px] font-medium transition-all flex items-center gap-2" onclick="openRevokeModal()" type="button">
+<span class="material-symbols-outlined text-[18px]">cancel</span>
+<span>Revoke record</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Embedded Interactive Confirmation Dialog Modal -->
+<div class="absolute inset-0 bg-bg-dark/80 backdrop-blur-xs flex items-center justify-center p-space-lg z-30 transition-opacity duration-200" id="confirmation-dialog">
+<div class="w-full max-w-lg bg-card-dark border border-border-dark rounded-xl p-space-xl flex flex-col gap-space-lg transform transition-transform duration-200 scale-100">
+<!-- Modal Header -->
+<div class="flex items-start gap-space-md">
+<div class="w-11 h-11 rounded-full bg-btn-danger border border-border-dark flex-shrink-0 flex items-center justify-center text-btn-danger-text">
+<span class="material-symbols-outlined text-[24px]">gavel</span>
+</div>
+<div class="flex-1">
+<span class="font-label-sm text-[11px] text-btn-danger-text uppercase tracking-widest font-semibold block mb-0.5">Irreversible Action</span>
+<h3 class="font-headline-md text-[20px] font-semibold text-text-title leading-tight">
+                        Revoke CERT-104? This cannot be undone.
+                      </h3>
+</div>
+</div>
+<!-- Modal Body Text -->
+<div class="bg-inset-dark border border-border-dark p-space-md rounded-lg flex flex-col gap-space-sm">
+<p class="font-body-sm text-[14px] text-text-primary leading-relaxed">
+                      Publishing this revocation will permanently mark record <span class="font-code-sm text-[12px] font-semibold bg-card-dark border border-border-dark px-1.5 py-0.5 rounded text-text-title">CERT-104</span> as nullified across all verification nodes. Academic verifiers will be notified that the credential is no longer valid.
+                    </p>
+<div class="flex items-center gap-2 pt-1 font-label-sm text-[12px] text-text-muted">
+<span class="material-symbols-outlined text-[16px] text-accent">token</span>
+<span>Ledger transaction payload hash: <code class="font-code-sm text-[12px] text-text-title">0x8a9f...c281</code></span>
+</div>
+</div>
+<!-- Modal Action Buttons -->
+<div class="flex items-center justify-end gap-space-md pt-space-xs">
+<button class="px-space-lg py-2 rounded-lg bg-inset-dark hover:bg-border-dark/60 text-text-primary border border-border-dark font-label-md text-[13px] font-medium transition-colors" onclick="closeRevokeModal()" type="button">
+                      Cancel
+                    </button>
+<button class="px-space-xl py-2 rounded-lg bg-btn-danger hover:bg-btn-danger-hover text-btn-danger-text border border-border-dark font-label-md text-[13px] font-medium transition-all flex items-center gap-2" onclick="confirmRevocation()" type="button">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+<span>Confirm Revocation</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Register Tab Panel View (Inactive/Alternative State) -->
+<div class="bg-card-dark border border-border-dark rounded-xl p-space-xl hidden" id="panel-register">
+<div class="mb-space-xl">
+<div class="flex items-center gap-space-sm mb-1">
+<span class="inline-block w-2.5 h-2.5 rounded-full bg-accent"></span>
+<h2 class="font-headline-md text-[20px] font-semibold text-text-title">Register a New Record</h2>
+</div>
+<p class="font-body-sm text-[14px] text-text-muted">
+                  Generate and commit a tamper-evident SHA-256 seal to the decentralized registrar consensus.
+                </p>
+</div>
+<div class="space-y-space-lg">
+<!-- Record ID Input -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-[13px] text-text-primary font-medium flex items-center justify-between" for="register-record-id">
+<span>Canonical Record Identifier</span>
+<span class="font-label-sm text-[11px] text-text-muted">E.g., CERT-119</span>
+</label>
+<input class="w-full h-11 px-space-md bg-inset-dark border border-border-dark font-code-md text-[14px] text-text-primary rounded-lg focus:outline-none focus:border-accent transition-all" id="register-record-id" placeholder="CERT-119" type="text"/>
+</div>
+<!-- Document Type Select -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-[13px] text-text-primary font-medium" for="doc-type">Document Type</label>
+<div class="relative">
+<select class="w-full h-11 px-space-md bg-inset-dark border border-border-dark font-body-md text-[14px] text-text-primary rounded-lg appearance-none focus:outline-none focus:border-accent transition-all cursor-pointer pr-10" id="doc-type">
+<option value="degree">Degree Parchment</option>
+<option value="marksheet">Marksheet &amp; Academic Transcript</option>
+<option value="training">Training Certificate of Completion</option>
+<option value="fellowship">Postdoctoral Fellowship Charter</option>
+</select>
+<span class="absolute right-3 top-3.5 material-symbols-outlined text-text-muted pointer-events-none text-[20px]">expand_more</span>
+</div>
+</div>
+<!-- File Intake Dropzone -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-[13px] text-text-primary font-medium">Parchment Canonical PDF</label>
+<div class="p-space-xl rounded-xl bg-inset-dark border border-border-dark flex flex-col items-center justify-center text-center cursor-pointer hover:border-accent transition-all group">
+<div class="w-12 h-12 rounded-full bg-card-dark border border-border-dark flex items-center justify-center text-accent group-hover:scale-105 transition-transform mb-space-sm">
+<span class="material-symbols-outlined text-[24px]">upload_file</span>
+</div>
+<p class="font-body-md text-[14px] text-text-primary font-medium">Drop certificate PDF or browse registry repository</p>
+<p class="font-label-sm text-[11px] text-text-muted mt-1">Accepts PDF up to 25MB · SHA-256 computed on device before network dispatch</p>
+</div>
+</div>
+<!-- Register Action -->
+<div class="pt-space-sm flex items-center justify-end">
+<button class="px-space-xl py-2.5 rounded-lg bg-accent text-bg-dark font-label-md text-[13px] font-semibold transition-all flex items-center gap-2 hover:opacity-90" type="button">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+<span>Register record</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Supplementary Informational Panel: Registrar Ledger Guidance (4 Columns on desktop) -->
+<div class="lg:col-span-4 flex flex-col gap-space-lg">
+<!-- Architectural Specifications Slip -->
+<div class="bg-card-dark border border-border-dark rounded-xl p-space-xl">
+<div class="flex items-center gap-2 text-text-title font-label-md text-[13px] font-semibold mb-space-md">
+<span class="material-symbols-outlined text-accent text-[20px]">menu_book</span>
+<span>Ledger Operation Guidelines</span>
+</div>
+<div class="space-y-space-md text-text-muted font-body-sm text-[14px] leading-relaxed">
+<div class="p-3 bg-inset-dark border border-border-dark rounded-lg flex flex-col gap-1">
+<span class="font-label-sm text-[11px] font-semibold text-text-title">Deterministic Anchors</span>
+<span>All actions compute an unalterable merkle inclusion tree proof distributed to accredited verification gateways.</span>
+</div>
+<div class="p-3 bg-inset-dark border border-border-dark rounded-lg flex flex-col gap-1">
+<span class="font-label-sm text-[11px] font-semibold text-text-title">Dual Sign-Off Rule</span>
+<span>Revocation tickets remain active across archival mirrors with the cryptographic timestamp signed by hardware key:</span>
+<span class="font-code-sm text-[12px] text-accent font-medium">oxf-reg-hsm-0041-fips140</span>
+</div>
+</div>
+</div>
+<!-- Quick Ledger Diagnostics Card -->
+<div class="bg-card-dark border border-border-dark rounded-xl p-space-xl flex flex-col gap-space-md">
+<span class="font-label-sm text-[11px] text-text-muted uppercase tracking-wider font-semibold">Consensus Health</span>
+<div class="grid grid-cols-2 gap-space-md">
+<div class="bg-inset-dark border border-border-dark p-space-md rounded-lg">
+<span class="text-text-muted font-label-sm text-[11px] block">Ledger Height</span>
+<span class="font-code-md text-[14px] font-semibold text-text-title">#1,894,204</span>
+</div>
+<div class="bg-inset-dark border border-border-dark p-space-md rounded-lg">
+<span class="text-text-muted font-label-sm text-[11px] block">Sync Status</span>
+<span class="font-label-sm text-[11px] font-medium text-status-anchored-text flex items-center gap-1 mt-0.5">
+<span class="w-1.5 h-1.5 rounded-full bg-status-anchored-text"></span>
+                    99.98% Synced
+                  </span>
+</div>
+</div>
+<div class="text-text-muted font-label-sm text-[11px] leading-tight">
+                Next batch block settlement projected in <span class="font-code-sm text-[12px] text-text-title font-medium">03:42 UTC</span>.
+              </div>
+</div>
+</div>
+</section>
+<!-- Recent Ledger Actions (Audit Trail Registry Table) -->
+<section class="w-full flex flex-col gap-space-lg mb-space-3xl">
+<div class="flex flex-col sm:flex-row sm:items-end justify-between gap-space-sm pb-space-xs">
+<div>
+<h3 class="font-headline-md text-[20px] font-semibold text-text-title">Recent Ledger Actions</h3>
+<p class="font-body-sm text-[14px] text-text-muted mt-0.5">
+                Immutable audit trail of recent registrar anchor transactions across Oxford notary nodes.
+              </p>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-[11px] text-text-muted">Showing last 4 transactions</span>
+<button class="p-1 rounded bg-card-dark border border-border-dark text-text-muted hover:text-text-primary transition-colors" title="Refresh Ledger View" type="button">
+<span class="material-symbols-outlined text-[18px]">refresh</span>
+</button>
+</div>
+</div>
+<!-- Archival Table -->
+<div class="bg-card-dark border border-border-dark rounded-xl overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-inset-dark border-b border-border-dark text-text-title font-label-md text-[13px]">
+<th class="py-space-md px-space-xl font-semibold">Time (UTC)</th>
+<th class="py-space-md px-space-xl font-semibold">Action</th>
+<th class="py-space-md px-space-xl font-semibold">Record ID</th>
+<th class="py-space-md px-space-xl font-semibold text-right">Status</th>
+</tr>
+</thead>
+<tbody class="font-body-sm text-[14px] text-text-primary divide-y divide-border-dark">
+<!-- Row 1: Revoke Record CERT-104 -->
+<tr class="bg-card-dark hover:bg-inset-dark transition-colors">
+<td class="py-space-md px-space-xl whitespace-nowrap text-text-muted font-code-sm text-[12px] tabular-nums">
+                      14 Oct 2024, 09:42 UTC
+                    </td>
+<td class="py-space-md px-space-xl font-medium text-text-title flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-btn-danger-text">remove_circle_outline</span>
+<span>Revoke Record</span>
+</td>
+<td class="py-space-md px-space-xl">
+<span class="font-code-sm text-[12px] font-semibold text-text-title bg-inset-dark border border-border-dark px-2 py-0.5 rounded">
+                        CERT-104
+                      </span>
+</td>
+<td class="py-space-md px-space-xl text-right whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-status-revoked-bg text-status-revoked-text border border-border-dark font-label-sm text-[11px] font-semibold">
+<span class="material-symbols-outlined text-[14px]">not_interested</span>
+                        Revoked
+                      </span>
+</td>
+</tr>
+<!-- Row 2: Register Record CERT-118 -->
+<tr class="bg-row-alt-dark hover:bg-inset-dark transition-colors">
+<td class="py-space-md px-space-xl whitespace-nowrap text-text-muted font-code-sm text-[12px] tabular-nums">
+                      12 Dec 2026, 09:30 UTC
+                    </td>
+<td class="py-space-md px-space-xl font-medium text-text-title flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-accent">add_task</span>
+<span>Register Record</span>
+</td>
+<td class="py-space-md px-space-xl">
+<span class="font-code-sm text-[12px] font-semibold text-text-title bg-inset-dark border border-border-dark px-2 py-0.5 rounded">
+                        CERT-118
+                      </span>
+</td>
+<td class="py-space-md px-space-xl text-right whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-status-anchored-bg text-status-anchored-text border border-border-dark font-label-sm text-[11px] font-semibold">
+<span class="material-symbols-outlined text-[14px]">check</span>
+                        Anchored
+                      </span>
+</td>
+</tr>
+<!-- Row 3: Register Record CERT-104 -->
+<tr class="bg-card-dark hover:bg-inset-dark transition-colors">
+<td class="py-space-md px-space-xl whitespace-nowrap text-text-muted font-code-sm text-[12px] tabular-nums">
+                      12 Dec 2026, 09:15 UTC
+                    </td>
+<td class="py-space-md px-space-xl font-medium text-text-title flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-accent">add_task</span>
+<span>Register Record</span>
+</td>
+<td class="py-space-md px-space-xl">
+<span class="font-code-sm text-[12px] font-semibold text-text-title bg-inset-dark border border-border-dark px-2 py-0.5 rounded">
+                        CERT-104
+                      </span>
+</td>
+<td class="py-space-md px-space-xl text-right whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-status-anchored-bg text-status-anchored-text border border-border-dark font-label-sm text-[11px] font-semibold">
+<span class="material-symbols-outlined text-[14px]">check</span>
+                        Anchored
+                      </span>
+</td>
+</tr>
+<!-- Row 4: Revoke Record CERT-089 -->
+<tr class="bg-row-alt-dark hover:bg-inset-dark transition-colors">
+<td class="py-space-md px-space-xl whitespace-nowrap text-text-muted font-code-sm text-[12px] tabular-nums">
+                      11 Dec 2026, 16:04 UTC
+                    </td>
+<td class="py-space-md px-space-xl font-medium text-text-title flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-btn-danger-text">remove_circle_outline</span>
+<span>Revoke Record</span>
+</td>
+<td class="py-space-md px-space-xl">
+<span class="font-code-sm text-[12px] font-semibold text-text-title bg-inset-dark border border-border-dark px-2 py-0.5 rounded">
+                        CERT-089
+                      </span>
+</td>
+<td class="py-space-md px-space-xl text-right whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-status-revoked-bg text-status-revoked-text border border-border-dark font-label-sm text-[11px] font-semibold">
+<span class="material-symbols-outlined text-[14px]">not_interested</span>
+                        Revoked
+                      </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-space-xl py-space-md bg-inset-dark border-t border-border-dark flex flex-col sm:flex-row items-center justify-between gap-space-sm font-label-sm text-[11px] text-text-muted">
+<span>Public Ledger Consensus: 12 Validator Quorum Verified</span>
+<a class="text-accent hover:underline font-medium inline-flex items-center gap-1" href="#">
+                Export full archival CSV log
+                <span class="material-symbols-outlined text-[14px]">arrow_outward</span>
+</a>
+</div>
+</div>
+</section>
+<!-- Statutory Disclaimer Module -->
+<section class="w-full bg-card-dark border border-border-dark p-space-lg rounded-xl mb-space-lg">
+<div class="flex items-start gap-space-md">
+<span class="material-symbols-outlined text-text-muted text-[20px] mt-0.5 flex-shrink-0">balance</span>
+<p class="font-body-sm text-[14px] text-text-muted leading-relaxed">
+              A match shows the file is identical to what was registered. It doesn't prove who issued it or that its contents are true.
+            </p>
+</div>
+</section>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full bg-card-dark border-t border-border-dark mt-auto">
+<div class="max-w-[1120px] mx-auto px-margin py-space-2xl flex flex-col gap-space-lg text-center md:text-left">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+<div class="flex items-center justify-center md:justify-start gap-space-sm">
+<span class="material-symbols-outlined text-text-muted text-[18px]">policy</span>
+<p class="font-label-sm text-[11px] text-text-muted leading-relaxed">A match shows the file is identical to what was registered. It doesn't prove who issued it or that its contents are true.</p>
+</div>
+<div class="font-label-sm text-[11px] text-text-muted whitespace-nowrap">© 2025 Office of the Registrar. All rights reserved.</div>
+</div>
+</div>
+</footer>
+<!-- Micro-interaction Logic -->
+<script>
+    function switchAdminTab(target) {
+      const revokePanel = document.getElementById('panel-revoke');
+      const registerPanel = document.getElementById('panel-register');
+      const revokeBtn = document.getElementById('tab-revoke-btn');
+      const registerBtn = document.getElementById('tab-register-btn');
+
+      if (target === 'register') {
+        revokePanel.classList.add('hidden');
+        registerPanel.classList.remove('hidden');
+
+        registerBtn.className = 'px-space-xl py-2 rounded-lg font-label-md text-[13px] bg-inset-dark border border-border-dark text-text-title font-semibold transition-all flex items-center gap-2';
+        revokeBtn.className = 'px-space-xl py-2 rounded-lg font-label-md text-[13px] text-text-muted hover:text-text-primary transition-all flex items-center gap-2';
+      } else {
+        registerPanel.classList.add('hidden');
+        revokePanel.classList.remove('hidden');
+
+        revokeBtn.className = 'px-space-xl py-2 rounded-lg font-label-md text-[13px] bg-inset-dark border border-border-dark text-text-title font-semibold transition-all flex items-center gap-2';
+        registerBtn.className = 'px-space-xl py-2 rounded-lg font-label-md text-[13px] text-text-muted hover:text-text-primary transition-all flex items-center gap-2';
+      }
+    }
+
+    function openRevokeModal() {
+      const modal = document.getElementById('confirmation-dialog');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+
+    function closeRevokeModal() {
+      const modal = document.getElementById('confirmation-dialog');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function confirmRevocation() {
+      const recordInput = document.getElementById('revoke-record-id');
+      const recordVal = recordInput ? recordInput.value : 'CERT-104';
+      closeRevokeModal();
+      alert('Revocation transaction signed and broadcast for ' + recordVal + ' with hardware key validation.');
+    }
+  </script>
+</body></html>

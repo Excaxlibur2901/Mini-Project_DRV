@@ -1,0 +1,15 @@
+{
+  "name": "decentralized-record-verifier",
+  "version": "0.1.0",
+  "description": "Decentralized Record Verifier with NLP Search (Web3 & AI)",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "node": "hardhat node"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "hardhat": "^2.22.0"
+  }
+}
+

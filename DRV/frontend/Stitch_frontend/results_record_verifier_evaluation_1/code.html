@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><title>Record Verifier</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=JetBrains+Mono:wght@400&amp;family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"surface-dim":"#dbdad5","on-secondary-fixed-variant":"#144f4b","surface-bright":"#fbf9f4","bg-paper":"#F6F4EF","ink-heading":"#1B2A41","background":"#fbf9f4","secondary":"#316763","primary-container":"#1b2a41","tertiary-fixed-dim":"#bdc8d3","primary-fixed-dim":"#b8c7e5","on-tertiary-fixed-variant":"#3d4851","outline-variant":"#c5c6ce","inverse-on-surface":"#f2f1ec","ink-primary":"#1F2933","secondary-fixed":"#b5ede7","on-error":"#ffffff","on-surface-variant":"#44474d","status-revoked-text":"#7A5410","on-tertiary-container":"#87929d","surface-container-high":"#eae8e3","accent-teal-soft":"#E2EEEC","status-mismatch-text":"#8E3A31","surface-container-lowest":"#ffffff","on-primary":"#ffffff","accent-teal":"#285F5B","status-mismatch-bg":"#F5E1DD","outline":"#75777e","surface-subtle":"#EFECE4","status-clarify-text":"#5B6670","accent-teal-hover":"#1F4D49","surface-container":"#f0eee9","primary":"#05152b","border-hairline":"#DDD8CC","on-tertiary-fixed":"#121d25","secondary-fixed-dim":"#9ad1cb","tertiary-container":"#202b34","on-tertiary":"#ffffff","on-primary-fixed-variant":"#394760","surface-container-low":"#f5f3ee","status-verified-bg":"#E5F0E9","on-error-container":"#93000a","tertiary":"#0c171f","status-verified-text":"#2F6B4A","ink-muted":"#5B6670","on-primary-fixed":"#0c1c32","status-notfound-text":"#34506B","on-secondary-fixed":"#00201e","error-container":"#ffdad6","primary-fixed":"#d5e3ff","status-clarify-bg":"#ECEAE3","on-primary-container":"#8291ad","status-notfound-bg":"#E4EBF2","surface-container-highest":"#e4e2dd","status-revoked-bg":"#F6ECD6","secondary-container":"#b5ede7","on-background":"#1b1c19","inverse-primary":"#b8c7e5","on-secondary-container":"#376d69","inverse-surface":"#30312e","surface-variant":"#e4e2dd","error":"#ba1a1a","on-secondary":"#ffffff","surface-tint":"#505f79","on-surface":"#1b1c19","tertiary-fixed":"#d8e4f0","surface":"#FFFFFF"},"borderRadius":{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},"spacing":{"space-md":"0.75rem","space-xl":"1.5rem","space-sm":"0.5rem","space-4xl":"4.5rem","margin":"1.5rem","gutter-mobile":"1rem","space-3xl":"3rem","gutter":"1.5rem","margin-mobile":"1rem","space-2xl":"2rem","space-lg":"1rem","space-xs":"0.25rem"},"fontFamily":{"code-sm":["JetBrains Mono"],"body-sm":["IBM Plex Sans"],"body-md":["IBM Plex Sans"],"headline-lg":["Libre Caslon Text"],"label-sm":["IBM Plex Sans"],"headline-md":["IBM Plex Sans"],"display":["Libre Caslon Text"],"code-md":["JetBrains Mono"],"body-lg":["IBM Plex Sans"],"display-mobile":["Libre Caslon Text"],"label-md":["IBM Plex Sans"]},"fontSize":{"code-sm":["12px",{"lineHeight":"18px","fontWeight":"400"}],"body-sm":["14px",{"lineHeight":"22px","fontWeight":"400"}],"body-md":["16px",{"lineHeight":"26px","fontWeight":"400"}],"headline-lg":["28px",{"lineHeight":"36px","fontWeight":"600"}],"label-sm":["11px",{"lineHeight":"16px","letterSpacing":"0.04em","fontWeight":"600"}],"headline-md":["20px",{"lineHeight":"28px","fontWeight":"600"}],"display":["40px",{"lineHeight":"48px","letterSpacing":"-0.01em","fontWeight":"600"}],"code-md":["14px",{"lineHeight":"22px","fontWeight":"400"}],"body-lg":["18px",{"lineHeight":"28px","fontWeight":"400"}],"display-mobile":["28px",{"lineHeight":"36px","letterSpacing":"0","fontWeight":"600"}],"label-md":["13px",{"lineHeight":"20px","letterSpacing":"0.02em","fontWeight":"500"}]}}}}</script></head><body class="bg-bg-paper font-body-md text-ink-primary min-h-screen flex flex-col antialiased"><header class="fixed top-0 left-0 right-0 z-50 bg-surface/90 backdrop-blur-md shadow-[0_1px_8px_rgba(27,42,65,0.04)]"><div class="max-w-[1120px] mx-auto px-margin h-16 flex items-center justify-between gap-gutter"><div class="flex items-center gap-space-xl"><a class="flex items-center gap-space-md group" data-path="verify" href="#"><div class="w-9 h-9 rounded-full bg-surface-subtle flex items-center justify-center text-accent-teal"><span class="material-symbols-outlined text-[20px]">verified</span></div><span class="font-headline-md text-headline-md text-ink-heading tracking-tight">Record Verifier</span></a><nav class="hidden md:flex items-center gap-space-xs p-1 bg-surface-subtle rounded-xl" data-active-classes="bg-primary-container text-on-primary font-medium rounded-lg shadow-sm"><a class="px-space-md py-1.5 font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors rounded-lg" data-path="verify" href="#">Verify</a><a class="px-space-md py-1.5 font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors rounded-lg" data-path="ask" href="#">Ask</a><a class="px-space-md py-1.5 font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors rounded-lg" data-path="admin" href="#">Admin</a><a class="px-space-md py-1.5 font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors rounded-lg" data-path="results" href="#">Results</a></nav></div><div class="flex items-center gap-space-md"><button aria-label="Toggle theme" class="w-9 h-9 rounded-lg flex items-center justify-center text-ink-muted hover:text-ink-heading hover:bg-surface-subtle transition-colors" type="button"><span class="material-symbols-outlined text-[20px]">light_mode</span></button><div class="hidden sm:flex items-center gap-space-sm pl-space-md py-1 pr-1.5 bg-surface-subtle rounded-full"><span class="w-2 h-2 rounded-full bg-accent-teal"></span><span class="font-label-sm text-label-sm text-ink-heading pr-1">Registrar Office · Admin</span><div class="w-7 h-7 rounded-full bg-primary flex items-center justify-center shadow-xs"><span class="material-symbols-outlined text-on-primary text-[16px]">person</span></div></div></div></div></header><main class="w-full flex-1 pt-16"><div class="flex flex-col w-full">
+<div class="max-w-[1120px] mx-auto px-margin py-space-3xl w-full flex flex-col gap-space-3xl">
+<!-- Document Header & Meta Registry Strip -->
+<header class="flex flex-col gap-space-md">
+<div class="flex flex-wrap items-center justify-between gap-space-sm">
+<span class="font-label-sm text-label-sm text-ink-muted uppercase tracking-wider">
+          BENCHMARK EVALUATION · STATUTORY AUDIT &amp; ACCURACY PROTOCOL
+        </span>
+<div class="flex items-center gap-space-xs px-space-sm py-0.5 bg-surface-subtle text-ink-primary font-code-sm text-code-sm rounded-lg">
+<span class="material-symbols-outlined text-[14px] text-accent-teal">verified_user</span>
+<span>SUITE_BUILD: 2025.04-STABLE</span>
+</div>
+</div>
+<div class="flex flex-col gap-space-sm">
+<h1 class="font-display text-display text-ink-heading tracking-tight">
+          Evaluation Results &amp; Verification Benchmarks
+        </h1>
+<p class="font-body-lg text-body-lg text-ink-muted max-w-[840px] leading-relaxed">
+          Empirical evaluation of the deterministic validation pipeline and small language model (SLM) semantic parser across statutory verification scenarios.
+        </p>
+</div>
+<!-- Quick Executive Summary Cards -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-space-md pt-space-md">
+<div class="bg-surface p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<span class="font-label-sm text-label-sm text-ink-muted">Total Test Cases</span>
+<div class="flex items-baseline gap-space-xs mt-space-xs">
+<span class="font-code-md text-[26px] font-semibold text-ink-heading">10</span>
+<span class="font-code-sm text-code-sm text-ink-muted">/ 10 Executed</span>
+</div>
+<span class="font-label-sm text-label-sm text-status-verified-text mt-space-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> 100% Pass Rate
+          </span>
+</div>
+<div class="bg-surface p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<span class="font-label-sm text-label-sm text-ink-muted">Synthetic Evaluation Cohort</span>
+<div class="flex items-baseline gap-space-xs mt-space-xs">
+<span class="font-code-md text-[26px] font-semibold text-ink-heading">2,500</span>
+<span class="font-code-sm text-code-sm text-ink-muted">queries</span>
+</div>
+<span class="font-label-sm text-label-sm text-ink-muted mt-space-xs">Across 4 university registrars</span>
+</div>
+<div class="bg-surface p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<span class="font-label-sm text-label-sm text-ink-muted">Intent Disambiguation</span>
+<div class="flex items-baseline gap-space-xs mt-space-xs">
+<span class="font-code-md text-[26px] font-semibold text-accent-teal">98.4%</span>
+<span class="font-code-sm text-code-sm text-ink-muted">SLM Accuracy</span>
+</div>
+<span class="font-label-sm text-label-sm text-ink-muted mt-space-xs">+17.2% vs regex baseline</span>
+</div>
+<div class="bg-surface p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<span class="font-label-sm text-label-sm text-ink-muted">Privilege Gate Enforcement</span>
+<div class="flex items-baseline gap-space-xs mt-space-xs">
+<span class="font-code-md text-[26px] font-semibold text-status-verified-text">100.0%</span>
+<span class="font-code-sm text-code-sm text-ink-muted">Deterministic</span>
+</div>
+<span class="font-label-sm text-label-sm text-ink-muted mt-space-xs">Zero public state mutations</span>
+</div>
+</div>
+</header>
+<!-- SECTION 1: Evaluation Test Suite (TC-01 – TC-10) -->
+<section class="flex flex-col gap-space-lg">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-sm">
+<span class="font-label-sm text-label-sm text-ink-muted uppercase tracking-wider">HARNESS SPECIFICATION</span>
+<span class="w-1.5 h-1.5 rounded-full bg-accent-teal"></span>
+<span class="font-code-sm text-code-sm text-accent-teal font-medium">TC-01 THRU TC-10</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-ink-heading">
+            Evaluation Test Suite
+          </h2>
+<p class="font-body-md text-body-md text-ink-muted max-w-[760px]">
+            Statutory test harness validating cryptographically grounded ingestion, tamper detection, privilege boundary defense, and error boundary compliance under live pipeline conditions.
+          </p>
+</div>
+<div class="flex items-center gap-space-sm">
+<button class="px-space-md py-1.5 bg-primary-container text-on-primary font-label-md text-label-md rounded-lg shadow-sm" id="filterAllBtn">
+            All (10)
+          </button>
+<button class="px-space-md py-1.5 bg-surface text-ink-primary font-label-md text-label-md rounded-lg hover:bg-surface-subtle transition-colors flex items-center gap-space-xs shadow-sm" id="exportCsvBtn">
+<span class="material-symbols-outlined text-[16px]">download</span>
+<span>Export Trace</span>
+</button>
+</div>
+</div>
+<!-- Test Cases Table -->
+<div class="bg-surface rounded-xl shadow-sm overflow-hidden flex flex-col">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse" id="testCasesTable">
+<thead>
+<tr class="bg-surface-subtle text-ink-heading font-label-md text-label-md">
+<th class="py-space-md px-space-lg font-medium whitespace-nowrap w-[110px]">Test ID</th>
+<th class="py-space-md px-space-lg font-medium min-w-[200px]">Scenario</th>
+<th class="py-space-md px-space-lg font-medium min-w-[320px]">Evaluation Input / Payload</th>
+<th class="py-space-md px-space-lg font-medium w-[190px]">Expected Result</th>
+<th class="py-space-md px-space-lg font-medium text-right w-[110px]">Status</th>
+</tr>
+</thead>
+<tbody class="font-body-sm text-body-sm divide-y-0">
+<!-- TC-01 -->
+<tr class="bg-surface hover:bg-surface-subtle/50 transition-colors">
+<td class="py-space-md px-space-lg font-code-md text-code-md text-ink-heading whitespace-nowrap">TC-01</td>
+<td class="py-space-md px-space-lg font-medium text-ink-primary">
+                  Valid degree credential verification
+                  <div class="font-label-sm text-label-sm text-ink-muted">Exact byte-for-byte SHA-256 match</div>
+</td>
+<td class="py-space-md px-space-lg">
+<div class="bg-surface-subtle px-space-sm py-1 rounded font-code-sm text-code-sm text-ink-heading truncate max-w-[360px]" title="DOC: 0x9f83...bc41 | SHA256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855">
+                    DOC: 0x9f83...bc41 | SHA256: e3b0c44298fc1c14...
+                  </div>
+</td>
+<td class="py-space-md px-space-lg">
+<span class="inline-flex items-center gap-1 font-label-md text-label-md text-status-verified-text bg-status-verified-bg px-space-sm py-0.5 rounded">
+<span class="material-symbols-outlined text-[14px]">check</span> Verified
+                  </span>
+</td>
+<td class="py-space-md px-space-lg text-right">
+<span class="inline-flex items-center gap-1 font-code-sm text-code-sm text-status-verified-text bg-status-verified-bg px-space-sm py-0.5 rounded font-medium">
+<span class="material-symbols-outlined text-[13px]">check</span> Pass
+                  </span>
+</td>
+</tr>
+<!-- TC-02 -->
+<tr class="bg-surface-subtle/40 hover:bg-surface-subtle transition-colors">
+<td class="py-space-md px-space-lg font-code-md text-code-md text-ink-heading whitespace-nowrap">TC-02</td>
+<td class="py-space-md px-space-lg font-medium text-ink-primary">
+                  Modified transcript with metadata altered
+                  <div class="font-label-sm text-label-sm text-ink-muted">Single bit trailer modification</div>
+</td>
+<td class="py-space-md px-space-lg">
+<div class="bg-surface-subtle px-space-sm py-1 rounded font-code-sm text-code-sm text-ink-heading truncate max-w-[360px]" title="DOC: 0x4a12...89ee | Tampered: 'Graduation: Summa Cum Laude'">
+                    DOC: 0x4a12...89ee | 'Graduation: Summa...'
+                  </div>
+</td>
+<td class="py-space-md px-space-lg">
+<span class="inline-flex items-center gap-1 font-label-md text-label-md text-status-mismatch-text bg-status-mismatch-bg px-space-sm py-0.5 rounded">
+<span class="material-symbols-outlined text-[14px]">close</span> Mismatch
+                  </span>
+</td>
+<td class="py-space-md px-space-lg text-right">
+<span class="inline-flex items-center gap-1 font-code-sm text-code-sm text-status-verified-text bg-status-verified-bg px-space-sm py-0.5 rounded font-medium">
+<span class="material-symbols-outlined text-[13px]">check</span> Pass
+                  </span>
+</td>
+</tr>
+<!-- TC-03 -->
+<tr class="bg-surface hover:bg-surface-subtle/50 transition-colors">
+<td class="py-space-md px-space-lg font-code-md text-code-md text-ink-heading whitespace-nowrap">TC-03</td>
+<td class="py-space-md px-space-lg font-medium text-ink-primary">
+                  Nullified diploma record query
+                  <div class="font-label-sm text-label-sm text-ink-muted">Revocation flag asserted in registry</div>
+</td>
+<td class="py-space-md px-space-lg">
+<div class="bg-surface-subtle px-space-sm py-1 rounded font-code-sm text-code-sm text-ink-heading truncate max-w-[360px]" title="QUERY: RECORD-ID #REC-2021-08991 REVOKED_AT: 2023-11-04">
+                    QUERY: ID #REC-2021-08991 (Revocation check)
+                  </div>
+</td>
+<td class="py-space-md px-space-lg">
+<span class="inline-flex items-center gap-1 font-label-md text-label-md text-status-revoked-text bg-status-revoked-bg px-space-sm py-0.5 rounded">
+<span class="material-symbols-outlined text-[14px]">block</span> Revoked
+                  </span>
+</td>
+<td class="py-space-md px-space-lg text-right">
+<span class="inline-flex items-center gap-1 font-code-sm text-code-sm text-status-verified-text bg-status-verified-bg px-space-sm py-0.5 rounded font-medium">
+<span class="material-symbols-outlined text-[13px]">check</span> Pass
+                  </span>
+</td>
+</tr>
+<!-- TC-04 -->
+<tr class="bg-surface-subtle/40 hover:bg-surface-subtle transition-colors">
+<td class="py-space-md px-space-lg font-code-md text-code-md text-ink-heading whitespace-nowrap">TC-04</td>
+<td class="py-space-md px-space-lg font-medium text-ink-primary">
+                  Unregistered certificate identifier query
+                  <div class="font-label-sm text-label-sm text-ink-muted">Nonexistent ledger index address</div>
+</td>
+<td class="py-space-md px-space-lg">
+<div class="bg-surface-subtle px-space-sm py-1 rounded font-code-sm text-code-sm text-ink-heading truncate max-w-[360px]" title="IDENTIFIER: CERT-NULL-77810-X9 | Nonce missing">
+                    IDENTIFIER: CERT-NULL-77810-X9 (Zero block)
+                  </div>
+</td>
+<td class="py-space-md px-space-lg">
+<span class="inline-flex items-center gap-1 font-label-md text-label-md text-status-notfound-text bg-status-notfound-bg px-space-sm py-0.5 rounded">
+<span class="material-symbols-outlined text-[14px]">search_off</span> Not Found
+                  </span>
+</td>
+<td class="py-space-md px-space-lg text-right">
+<span class="inline-flex items-center gap-1 font-code-sm text-code-sm text-status-verified-text bg-status-verified-bg px-space-sm py-0.5 rounded font-medium">
+<span class="material-symbols-outlined text-[13px]">check</span> Pass
+                  </span>
+</td>
+</tr>
+<!-- TC-05 -->
+<tr class="bg-surface hover:bg-surface-subtle/50 transition-colors">
+<td class="py-space-md px-space-lg font-code-md text-code-md text-ink-heading whitespace-nowrap">TC-05</td>
+<td class="py-space-md px-space-lg font-medium text-ink-primary">
+                  Ambiguous natural language prompt
+                  <div class="font-label-sm text-label-sm text-ink-muted">Lacks record identifier or valid hash</div>
+</td>
+<td class="py-space-md px-space-lg">
+<div class="bg-surface-subtle px-space-sm py-1 rounded font-code-sm text-code-sm text-ink-heading truncate max-w-[360px]" title="PROMPT: 'Can you check my degree from engineering school?'">
+                    NL: "Can you check my degree from engineering?"
+                  </div>
+</td>
+<td class="py-space-md px-space-lg">
+<span class="inline-flex items-center gap-1 font-label-md text-label-md text-status-clarify-text bg-status-clarify-bg px-space-sm py-0.5 rounded">
+<span class="material-symbols-outlined text-[14px]">help</span> Needs Clarification
+                  </span>
+</td>
+<td class="py-space-md px-space-lg text-right">
+<span class="inline-flex items-center gap-1 font-code-sm text-code-sm text-status-verified-text bg-status-verified-bg px-space-sm py-0.5 rounded font-medium">
+<span class="material-symbols-outlined text-[13px]">check</span> Pass
+                  </span>
+</td>
+</tr>
+<!-- TC-06 -->
+<tr class="bg-surface-subtle/40 hover:bg-surface-subtle transition-colors">
+<td class="py-space-md px-space-lg font-code-md text-code-md text-ink-heading whitespace-nowrap">TC-06</td>
+<td class="py-space-md px-space-lg font-medium text-ink-primary">
+                  Destructive mutation attempt via NL terminal
+                  <div class="font-label-sm text-label-sm text-ink-muted">Public terminal privilege escalation attack</div>
+</td>
+<td class="py-space-md px-space-lg">
+<div class="bg-surface-subtle px-space-sm py-1 rounded font-code-sm text-code-sm text-ink-heading truncate max-w-[360px]" title="PROMPT: 'Revoke key 0x4B and wipe certificate #8819 immediately'">
+                    NL: "Revoke key and wipe certificate #8819"
+                  </div>
+</td>
+<td class="py-space-md px-space-lg">
+<span class="inline-flex items-center gap-1 font-label-md text-label-md text-status-mismatch-text bg-status-mismatch-bg px-space-sm py-0.5 rounded">
+<span class="material-symbols-outlined text-[14px]">shield</span> Privilege Violation
+                  </span>
+</td>
+<td class="py-space-md px-space-lg text-right">
+<span class="inline-flex items-center gap-1 font-code-sm text-code-sm text-status-verified-text bg-status-verified-bg px-space-sm py-0.5 rounded font-medium">
+<span class="material-symbols-outlined text-[13px]">check</span> Pass
+                  </span>
+</td>
+</tr>
+<!-- TC-07 -->
+<tr class="bg-surface hover:bg-surface-subtle/50 transition-colors">
+<td class="py-space-md px-space-lg font-code-md text-code-md text-ink-heading whitespace-nowrap">TC-07</td>
+<td class="py-space-md px-space-lg font-medium text-ink-primary">
+                  Malformed schema injection in NL query
+                  <div class="font-label-sm text-label-sm text-ink-muted">Nested JSON payload with prototype poison</div>
+</td>
+<td class="py-space-md px-space-lg">
+<div class="bg-surface-subtle px-space-sm py-1 rounded font-code-sm text-code-sm text-ink-heading truncate max-w-[360px]" title="INJECT: {'query': '__proto__.role=\'admin\'', 'record': 102}">
+                    JSON: {"query": "__proto__.role='admin'", ...}
+                  </div>
+</td>
+<td class="py-space-md px-space-lg">
+<span class="inline-flex items-center gap-1 font-label-md text-label-md text-status-clarify-text bg-status-clarify-bg px-space-sm py-0.5 rounded">
+<span class="material-symbols-outlined text-[14px]">code_off</span> Parse Aborted
+                  </span>
+</td>
+<td class="py-space-md px-space-lg text-right">
+<span class="inline-flex items-center gap-1 font-code-sm text-code-sm text-status-verified-text bg-status-verified-bg px-space-sm py-0.5 rounded font-medium">
+<span class="material-symbols-outlined text-[13px]">check</span> Pass
+                  </span>
+</td>
+</tr>
+<!-- TC-08 -->
+<tr class="bg-surface-subtle/40 hover:bg-surface-subtle transition-colors">
+<td class="py-space-md px-space-lg font-code-md text-code-md text-ink-heading whitespace-nowrap">TC-08</td>
+<td class="py-space-md px-space-lg font-medium text-ink-primary">
+                  RPC Node timeout / consensus disconnection
+                  <div class="font-label-sm text-label-sm text-ink-muted">Simulated connection drop at block lookup</div>
+</td>
+<td class="py-space-md px-space-lg">
+<div class="bg-surface-subtle px-space-sm py-1 rounded font-code-sm text-code-sm text-ink-heading truncate max-w-[360px]" title="FAULT_INJECTION: ETH_RPC_TIMEOUT_504 on endpoint 127.0.0.1:8545">
+                    SIM_RPC_TIMEOUT_504 (Node unreachable)
+                  </div>
+</td>
+<td class="py-space-md px-space-lg">
+<span class="inline-flex items-center gap-1 font-label-md text-label-md text-ink-muted bg-surface-subtle px-space-sm py-0.5 rounded">
+<span class="material-symbols-outlined text-[14px]">wifi_off</span> Banner (FR-04)
+                  </span>
+</td>
+<td class="py-space-md px-space-lg text-right">
+<span class="inline-flex items-center gap-1 font-code-sm text-code-sm text-status-verified-text bg-status-verified-bg px-space-sm py-0.5 rounded font-medium">
+<span class="material-symbols-outlined text-[13px]">check</span> Pass
+                  </span>
+</td>
+</tr>
+<!-- TC-09 -->
+<tr class="bg-surface hover:bg-surface-subtle/50 transition-colors">
+<td class="py-space-md px-space-lg font-code-md text-code-md text-ink-heading whitespace-nowrap">TC-09</td>
+<td class="py-space-md px-space-lg font-medium text-ink-primary">
+                  Multi-identifier query disambiguation
+                  <div class="font-label-sm text-label-sm text-ink-muted">User inputs candidate list with two active IDs</div>
+</td>
+<td class="py-space-md px-space-lg">
+<div class="bg-surface-subtle px-space-sm py-1 rounded font-code-sm text-code-sm text-ink-heading truncate max-w-[360px]" title="INPUT: 'Verify records #REC-2022-901 and #REC-2024-302 simultaneously'">
+                    NL: "Verify #REC-2022-901 and #REC-2024-302"
+                  </div>
+</td>
+<td class="py-space-md px-space-lg">
+<span class="inline-flex items-center gap-1 font-label-md text-label-md text-status-clarify-text bg-status-clarify-bg px-space-sm py-0.5 rounded">
+<span class="material-symbols-outlined text-[14px]">call_split</span> Disambiguation Prompt
+                  </span>
+</td>
+<td class="py-space-md px-space-lg text-right">
+<span class="inline-flex items-center gap-1 font-code-sm text-code-sm text-status-verified-text bg-status-verified-bg px-space-sm py-0.5 rounded font-medium">
+<span class="material-symbols-outlined text-[13px]">check</span> Pass
+                  </span>
+</td>
+</tr>
+<!-- TC-10 -->
+<tr class="bg-surface-subtle/40 hover:bg-surface-subtle transition-colors">
+<td class="py-space-md px-space-lg font-code-md text-code-md text-ink-heading whitespace-nowrap">TC-10</td>
+<td class="py-space-md px-space-lg font-medium text-ink-primary">
+                  High-entropy noisy input string
+                  <div class="font-label-sm text-label-sm text-ink-muted">Unstructured binary garble and control characters</div>
+</td>
+<td class="py-space-md px-space-lg">
+<div class="bg-surface-subtle px-space-sm py-1 rounded font-code-sm text-code-sm text-ink-heading truncate max-w-[360px]" title="RAW_STREAM: \x00\xFF\xAA\xFE\x00\x02??!!#$*&amp;%^~`|&lt;&gt;">
+                    STREAM: \x00\xFF\xAA\xFE...??!*&amp;^%~`
+                  </div>
+</td>
+<td class="py-space-md px-space-lg">
+<span class="inline-flex items-center gap-1 font-label-md text-label-md text-ink-muted bg-surface-subtle px-space-sm py-0.5 rounded">
+<span class="material-symbols-outlined text-[14px]">warning</span> Syntax Fallback
+                  </span>
+</td>
+<td class="py-space-md px-space-lg text-right">
+<span class="inline-flex items-center gap-1 font-code-sm text-code-sm text-status-verified-text bg-status-verified-bg px-space-sm py-0.5 rounded font-medium">
+<span class="material-symbols-outlined text-[13px]">check</span> Pass
+                  </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer Metadata -->
+<div class="p-space-md bg-surface-subtle flex flex-wrap items-center justify-between gap-space-sm font-label-sm text-label-sm text-ink-muted">
+<div class="flex items-center gap-space-sm">
+<span class="w-2 h-2 rounded-full bg-status-verified-text"></span>
+<span>Regression harness completed with 0 errors across 10 statutory criteria.</span>
+</div>
+<span class="font-code-sm text-code-sm">Deterministic pipeline latency: μ=14.2ms | σ=1.8ms</span>
+</div>
+</div>
+</section>
+<!-- SECTION 2: AI Interpreter vs Rules-Based Baseline -->
+<section class="flex flex-col gap-space-lg">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-sm">
+<span class="font-label-sm text-label-sm text-ink-muted uppercase tracking-wider">EMPIRICAL COMPARISON</span>
+<span class="w-1.5 h-1.5 rounded-full bg-accent-teal"></span>
+<span class="font-code-sm text-code-sm text-accent-teal font-medium">BENCHMARK RATIO (N=2,500)</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-ink-heading">
+          AI Interpreter vs. Rules-Based Baseline
+        </h2>
+<p class="font-body-md text-body-md text-ink-muted max-w-[800px]">
+          Comparison between the constrained semantic parser (fine-tuned 3B parameter small language model with strict grammar masking) and the legacy deterministic regex/keyword pattern parser.
+        </p>
+</div>
+<!-- Comparative Metrics Card Container -->
+<div class="bg-surface rounded-xl p-space-xl shadow-sm flex flex-col gap-space-xl">
+<!-- Legend Strip -->
+<div class="flex flex-wrap items-center justify-between pb-space-md bg-surface-subtle/50 p-space-md rounded-lg">
+<div class="flex items-center gap-space-xl">
+<div class="flex items-center gap-space-sm">
+<span class="w-3.5 h-3.5 rounded bg-accent-teal"></span>
+<span class="font-label-md text-label-md text-ink-heading font-medium">AI Interpreter (SLM + Grammar Mask)</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<span class="w-3.5 h-3.5 rounded bg-ink-muted"></span>
+<span class="font-label-md text-label-md text-ink-muted">Rules Baseline (Regex &amp; Tokens)</span>
+</div>
+</div>
+<span class="font-code-sm text-code-sm text-ink-muted">Confidence Interval: 95% (CI: ±0.3%)</span>
+</div>
+<!-- Metric Rows -->
+<div class="flex flex-col gap-space-xl">
+<!-- Metric 1: Intent Accuracy -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-baseline justify-between">
+<span class="font-body-md text-body-md font-medium text-ink-heading">1. Intent Classification Accuracy</span>
+<div class="flex items-center gap-space-lg font-code-md text-code-md">
+<span class="text-accent-teal font-semibold">98.4%</span>
+<span class="text-ink-muted">81.2%</span>
+</div>
+</div>
+<!-- Dual Horizontal Bar -->
+<div class="flex flex-col gap-1.5 pt-1">
+<!-- AI bar -->
+<div class="w-full bg-surface-subtle h-3 rounded overflow-hidden">
+<div class="bg-accent-teal h-full rounded transition-all duration-700" style="width: 98.4%;"></div>
+</div>
+<!-- Baseline bar -->
+<div class="w-full bg-surface-subtle h-2.5 rounded overflow-hidden">
+<div class="bg-ink-muted h-full rounded transition-all duration-700" style="width: 81.2%;"></div>
+</div>
+</div>
+<div class="flex justify-between font-label-sm text-label-sm text-ink-muted">
+<span>Resolves indirect phrases (e.g., "confirm authentic diploma") to lookup intent</span>
+<span>Δ +17.2% lift</span>
+</div>
+</div>
+<!-- Metric 2: Record-ID Extraction -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-baseline justify-between">
+<span class="font-body-md text-body-md font-medium text-ink-heading">2. Record-ID Extraction &amp; Normalization</span>
+<div class="flex items-center gap-space-lg font-code-md text-code-md">
+<span class="text-accent-teal font-semibold">99.1%</span>
+<span class="text-ink-muted">89.5%</span>
+</div>
+</div>
+<!-- Dual Horizontal Bar -->
+<div class="flex flex-col gap-1.5 pt-1">
+<div class="w-full bg-surface-subtle h-3 rounded overflow-hidden">
+<div class="bg-accent-teal h-full rounded transition-all duration-700" style="width: 99.1%;"></div>
+</div>
+<div class="w-full bg-surface-subtle h-2.5 rounded overflow-hidden">
+<div class="bg-ink-muted h-full rounded transition-all duration-700" style="width: 89.5%;"></div>
+</div>
+</div>
+<div class="flex justify-between font-label-sm text-label-sm text-ink-muted">
+<span>Extracts prefixed IDs, hashes with whitespace, and OCR artifacts</span>
+<span>Δ +9.6% lift</span>
+</div>
+</div>
+<!-- Metric 3: Exact Query Match -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-baseline justify-between">
+<span class="font-body-md text-body-md font-medium text-ink-heading">3. Exact Query Schema Match (End-to-End)</span>
+<div class="flex items-center gap-space-lg font-code-md text-code-md">
+<span class="text-accent-teal font-semibold">96.8%</span>
+<span class="text-ink-muted">74.0%</span>
+</div>
+</div>
+<!-- Dual Horizontal Bar -->
+<div class="flex flex-col gap-1.5 pt-1">
+<div class="w-full bg-surface-subtle h-3 rounded overflow-hidden">
+<div class="bg-accent-teal h-full rounded transition-all duration-700" style="width: 96.8%;"></div>
+</div>
+<div class="w-full bg-surface-subtle h-2.5 rounded overflow-hidden">
+<div class="bg-ink-muted h-full rounded transition-all duration-700" style="width: 74.0%;"></div>
+</div>
+</div>
+<div class="flex justify-between font-label-sm text-label-sm text-ink-muted">
+<span>Full semantic parameter map matching canonical contract ABI call</span>
+<span>Δ +22.8% lift</span>
+</div>
+</div>
+<!-- Metric 4: Unauthorized Requests Blocked -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-baseline justify-between">
+<span class="font-body-md text-body-md font-medium text-ink-heading">4. Unauthorized Mutation Requests Blocked</span>
+<div class="flex items-center gap-space-lg font-code-md text-code-md">
+<span class="text-accent-teal font-semibold">100.0%</span>
+<span class="text-ink-muted">92.5%</span>
+</div>
+</div>
+<!-- Dual Horizontal Bar -->
+<div class="flex flex-col gap-1.5 pt-1">
+<div class="w-full bg-surface-subtle h-3 rounded overflow-hidden">
+<div class="bg-accent-teal h-full rounded transition-all duration-700" style="width: 100.0%;"></div>
+</div>
+<div class="w-full bg-surface-subtle h-2.5 rounded overflow-hidden">
+<div class="bg-ink-muted h-full rounded transition-all duration-700" style="width: 92.5%;"></div>
+</div>
+</div>
+<div class="flex justify-between font-label-sm text-label-sm text-ink-muted">
+<span>Dual-layer protection: SLM intent firewall + deterministic role verification</span>
+<span>Deterministic zero-leakage guarantee</span>
+</div>
+</div>
+<!-- Metric 5: Latency trade-off -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-baseline justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="font-body-md text-body-md font-medium text-ink-heading">5. Average Processing Response Time</span>
+<span class="font-label-sm text-label-sm text-ink-muted">(Inference vs Lexical)</span>
+</div>
+<div class="flex items-center gap-space-lg font-code-md text-code-md">
+<span class="text-accent-teal font-semibold">340ms</span>
+<span class="text-ink-muted">42ms</span>
+</div>
+</div>
+<!-- Dual Horizontal Bar for latency (normalized to max 400ms scale) -->
+<div class="flex flex-col gap-1.5 pt-1">
+<div class="w-full bg-surface-subtle h-3 rounded overflow-hidden">
+<div class="bg-accent-teal h-full rounded transition-all duration-700" style="width: 85%;"></div>
+</div>
+<div class="w-full bg-surface-subtle h-2.5 rounded overflow-hidden">
+<div class="bg-ink-muted h-full rounded transition-all duration-700" style="width: 10.5%;"></div>
+</div>
+</div>
+<div class="flex justify-between font-label-sm text-label-sm text-ink-muted">
+<span>Semantic inference trade-off: 298ms delta accepted to secure 96.8% precision</span>
+<span>Sub-second SLA compliant (&lt;500ms target)</span>
+</div>
+</div>
+</div>
+<!-- Prominent Limitations & Methodology Note Card -->
+<div class="p-space-lg bg-surface-subtle rounded-xl flex flex-col md:flex-row gap-space-md items-start">
+<div class="w-9 h-9 rounded-lg bg-surface flex items-center justify-center text-accent-teal flex-shrink-0 shadow-xs">
+<span class="material-symbols-outlined text-[20px]">science</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-space-sm">
+<span class="font-label-md text-label-md font-semibold text-ink-heading">
+                Measured on synthetic data. See limitations.
+              </span>
+<span class="font-code-sm text-code-sm px-space-xs py-0.5 bg-surface rounded text-ink-muted">AUDIT-METHOD-v3</span>
+</div>
+<p class="font-body-sm text-body-sm text-ink-muted leading-relaxed">
+              Evaluation conducted across n=2,500 synthetic queries simulated across schemas from four partnering registrar institutions. While the SLM achieves 98.4% intent extraction, statutory non-repudiation is maintained strictly via downstream deterministic post-processing: regardless of language model output, role authorization gates and cryptographic digest checks enforce 100% boundary isolation prior to ledger interaction.
+            </p>
+</div>
+</div>
+</div>
+</section>
+<!-- SECTION 3: Visual Distribution & Confidence Envelope -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-space-xl">
+<!-- Card A: Error Distribution Breakdown -->
+<div class="bg-surface rounded-xl p-space-xl shadow-sm flex flex-col justify-between gap-space-lg">
+<div class="flex flex-col gap-space-xs">
+<span class="font-label-sm text-label-sm text-ink-muted uppercase tracking-wider">ERROR MODES ANALYTICS</span>
+<h3 class="font-headline-md text-headline-md text-ink-heading">Failure Class Stratification</h3>
+<p class="font-body-sm text-body-sm text-ink-muted">
+            Analysis of residual failure events observed during 2,500 query stress tests.
+          </p>
+</div>
+<!-- Minimalist Inline SVG Donut Chart -->
+<div class="flex items-center justify-center py-space-md">
+<div class="relative flex items-center justify-center">
+<svg aria-label="Error stratification chart" class="w-44 h-44 -rotate-90" viewbox="0 0 100 100">
+<!-- Background Ring -->
+<circle cx="50" cy="50" fill="none" r="38" stroke="#EFECE4" stroke-width="12"></circle>
+<!-- High OCR noise (68%) -> circumference = 238.76, 68% = 162.3 -->
+<circle cx="50" cy="50" fill="none" r="38" stroke="#285F5B" stroke-dasharray="162.3 238.76" stroke-dashoffset="0" stroke-width="12"></circle>
+<!-- Ambiguous names (24%) -> 24% = 57.3 -->
+<circle cx="50" cy="50" fill="none" r="38" stroke="#5B6670" stroke-dasharray="57.3 238.76" stroke-dashoffset="-162.3" stroke-width="12"></circle>
+<!-- Malformed syntax (8%) -> 8% = 19.1 -->
+<circle cx="50" cy="50" fill="none" r="38" stroke="#316763" stroke-dasharray="19.1 238.76" stroke-dashoffset="-219.6" stroke-width="12"></circle>
+</svg>
+<div class="absolute flex flex-col items-center">
+<span class="font-code-md text-code-md font-semibold text-ink-heading">1.6%</span>
+<span class="font-label-sm text-label-sm text-ink-muted">Total Errors</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-space-sm pt-space-xs font-label-sm text-label-sm">
+<div class="flex flex-col gap-1 p-space-sm bg-surface-subtle rounded">
+<div class="flex items-center gap-1.5 text-accent-teal font-medium">
+<span class="w-2 h-2 rounded-full bg-accent-teal"></span>
+<span>OCR Noise</span>
+</div>
+<span class="font-code-sm text-code-sm font-semibold text-ink-heading">68% of fails</span>
+</div>
+<div class="flex flex-col gap-1 p-space-sm bg-surface-subtle rounded">
+<div class="flex items-center gap-1.5 text-ink-muted font-medium">
+<span class="w-2 h-2 rounded-full bg-ink-muted"></span>
+<span>Ambiguity</span>
+</div>
+<span class="font-code-sm text-code-sm font-semibold text-ink-heading">24% of fails</span>
+</div>
+<div class="flex flex-col gap-1 p-space-sm bg-surface-subtle rounded">
+<div class="flex items-center gap-1.5 text-secondary font-medium">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span>Syntax</span>
+</div>
+<span class="font-code-sm text-code-sm font-semibold text-ink-heading">8% of fails</span>
+</div>
+</div>
+</div>
+<!-- Card B: Notary Ledger Ingestion Spec -->
+<div class="bg-surface rounded-xl p-space-xl shadow-sm flex flex-col justify-between gap-space-md">
+<div class="flex flex-col gap-space-xs">
+<span class="font-label-sm text-label-sm text-ink-muted uppercase tracking-wider">CRYPTOGRAPHIC TRACE</span>
+<h3 class="font-headline-md text-headline-md text-ink-heading">Pipeline Gate Execution Spec</h3>
+<p class="font-body-sm text-body-sm text-ink-muted">
+            Ordered security assertions applied to every ingress payload prior to state machine dispatch.
+          </p>
+</div>
+<div class="flex flex-col gap-space-sm my-auto">
+<!-- Step 1 -->
+<div class="flex items-center justify-between p-space-sm bg-surface-subtle rounded">
+<div class="flex items-center gap-space-sm">
+<span class="w-6 h-6 rounded bg-surface font-code-sm text-code-sm flex items-center justify-center font-medium text-accent-teal">01</span>
+<span class="font-body-sm text-body-sm text-ink-heading">Schema &amp; AST Conformance</span>
+</div>
+<span class="font-code-sm text-code-sm text-status-verified-text flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">done</span> Passed
+            </span>
+</div>
+<!-- Step 2 -->
+<div class="flex items-center justify-between p-space-sm bg-surface-subtle rounded">
+<div class="flex items-center gap-space-sm">
+<span class="w-6 h-6 rounded bg-surface font-code-sm text-code-sm flex items-center justify-center font-medium text-accent-teal">02</span>
+<span class="font-body-sm text-body-sm text-ink-heading">Intent Whitelist &amp; Masking</span>
+</div>
+<span class="font-code-sm text-code-sm text-status-verified-text flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">done</span> Passed
+            </span>
+</div>
+<!-- Step 3 -->
+<div class="flex items-center justify-between p-space-sm bg-surface-subtle rounded">
+<div class="flex items-center gap-space-sm">
+<span class="w-6 h-6 rounded bg-surface font-code-sm text-code-sm flex items-center justify-center font-medium text-accent-teal">03</span>
+<span class="font-body-sm text-body-sm text-ink-heading">Canonical Record ID Resolution</span>
+</div>
+<span class="font-code-sm text-code-sm text-status-verified-text flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">done</span> Passed
+            </span>
+</div>
+<!-- Step 4 -->
+<div class="flex items-center justify-between p-space-sm bg-surface-subtle rounded">
+<div class="flex items-center gap-space-sm">
+<span class="w-6 h-6 rounded bg-surface font-code-sm text-code-sm flex items-center justify-center font-medium text-accent-teal">04</span>
+<span class="font-body-sm text-body-sm text-ink-heading">Role Authority &amp; Access Gate</span>
+</div>
+<span class="font-code-sm text-code-sm text-status-verified-text flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">done</span> Passed
+            </span>
+</div>
+<!-- Step 5 -->
+<div class="flex items-center justify-between p-space-sm bg-surface-subtle rounded">
+<div class="flex items-center gap-space-sm">
+<span class="w-6 h-6 rounded bg-surface font-code-sm text-code-sm flex items-center justify-center font-medium text-accent-teal">05</span>
+<span class="font-body-sm text-body-sm text-ink-heading">SHA-256 Digest Contract Call</span>
+</div>
+<span class="font-code-sm text-code-sm text-status-verified-text flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">done</span> Passed
+            </span>
+</div>
+</div>
+<div class="font-label-sm text-label-sm text-ink-muted">
+          All 5 steps execute sequentially. An abortion at any gate yields zero smart contract execution.
+        </div>
+</div>
+</section>
+<!-- Statutorily Enforced Permanent Disclaimer -->
+<div class="p-space-lg bg-surface rounded-xl shadow-sm flex items-start gap-space-md">
+<span class="material-symbols-outlined text-ink-muted text-[22px] mt-0.5 flex-shrink-0">gavel</span>
+<div class="flex flex-col gap-1">
+<span class="font-label-md text-label-md font-semibold text-ink-heading">Statutory Notice of Record Evidentiary Weight</span>
+<p class="font-body-sm text-body-sm text-ink-muted leading-relaxed">
+          A match shows the file is identical to what was registered. It doesn't prove who issued it or that its contents are true. Verification logs and benchmark traces are archived under parliamentary registrar protocols.
+        </p>
+</div>
+</div>
+</div>
+</div>
+<script>
+  (function() {
+    // Interactive export handler
+    const exportBtn = document.getElementById('exportCsvBtn');
+    if (exportBtn) {
+      exportBtn.addEventListener('click', function() {
+        const rows = [
+          ["Test ID", "Scenario", "Input Payload", "Expected Result", "Status"],
+          ["TC-01", "Valid degree credential verification", "DOC: 0x9f83...bc41", "Verified", "Pass"],
+          ["TC-02", "Modified transcript with metadata altered", "DOC: 0x4a12...89ee", "Mismatch", "Pass"],
+          ["TC-03", "Nullified diploma record query", "QUERY: ID #REC-2021-08991", "Revoked", "Pass"],
+          ["TC-04", "Unregistered certificate identifier", "IDENTIFIER: CERT-NULL-77810-X9", "Not Found", "Pass"],
+          ["TC-05", "Ambiguous natural language prompt", "NL: Can you check my degree...", "Needs Clarification", "Pass"],
+          ["TC-06", "Destructive mutation attempt via NL", "NL: Revoke key and wipe certificate", "Privilege Violation", "Pass"],
+          ["TC-07", "Malformed schema injection", "JSON: {\"query\": \"__proto__...\"}", "Parse Aborted", "Pass"],
+          ["TC-08", "RPC Node timeout / consensus disconnect", "SIM_RPC_TIMEOUT_504", "Banner (FR-04)", "Pass"],
+          ["TC-09", "Multi-identifier query disambiguation", "NL: Verify #REC-2022-901 and #REC-2024-302", "Disambiguation Prompt", "Pass"],
+          ["TC-10", "High-entropy noisy input string", "STREAM: \\x00\\xFF\\xAA\\xFE...", "Syntax Fallback", "Pass"]
+        ];
+
+        let csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.map(i => `"${i}"`).join(",")).join("\n");
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "record_verifier_benchmark_tc01_tc10.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
+    }
+
+    // Interactive button state feedback
+    const filterBtn = document.getElementById('filterAllBtn');
+    if (filterBtn) {
+      filterBtn.addEventListener('click', function() {
+        this.classList.add('scale-[0.98]');
+        setTimeout(() => this.classList.remove('scale-[0.98]'), 150);
+      });
+    }
+  })();
+</script></main><footer class="w-full bg-surface-subtle mt-auto"><div class="max-w-[1120px] mx-auto px-margin py-space-2xl flex flex-col gap-space-lg text-center md:text-left"><div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md"><div class="flex items-center justify-center md:justify-start gap-space-sm"><span class="material-symbols-outlined text-ink-muted text-[18px]">policy</span><p class="font-label-sm text-label-sm text-ink-muted leading-relaxed">A match shows the file is identical to what was registered. It doesn't prove who issued it or that its contents are true.</p></div><div class="font-label-sm text-label-sm text-ink-muted whitespace-nowrap">© 2025 Office of the Registrar. All rights reserved.</div></div></div></footer></body></html>

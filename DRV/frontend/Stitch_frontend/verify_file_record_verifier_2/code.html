@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="web_standard" name="shell-type"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100..900&amp;family=Libre+Caslon+Text:wght@400;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<style>
+    @layer base {
+      html, body { margin: 0; padding: 0; }
+      body { overscroll-behavior: none; }
+      main > :first-child { margin-top: 0 !important; }
+      main > :last-child { margin-bottom: 0 !important; }
+    }
+    ::-webkit-scrollbar { display: none; }
+  </style>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "bg-dark": "#14181D",
+            "panel-dark": "#1B2227",
+            "panel-border": "#2E373F",
+            "inset-dark": "#222A31",
+            "text-primary": "#E7E4DC",
+            "text-heading": "#C9D3E0",
+            "text-muted": "#9AA4AD",
+            "accent": "#6FA8A1",
+            "accent-hover": "#5e948d",
+            "status-verified-bg": "#183325",
+            "status-verified-text": "#7CD5A7",
+            "status-mismatch-bg": "#3A1E1B",
+            "status-mismatch-text": "#F29E94",
+            "status-revoked-bg": "#362810",
+            "status-revoked-text": "#E5BA6C",
+            "status-notfound-bg": "#192A3A",
+            "status-notfound-text": "#93C2EB",
+            "status-clarify-bg": "#222B34",
+            "status-clarify-text": "#C0C8D0"
+          },
+          borderRadius: {
+            DEFAULT: "0.25rem",
+            lg: "0.5rem",
+            xl: "0.75rem",
+            full: "9999px"
+          },
+          spacing: {
+            "space-2xl": "2rem",
+            "space-md": "0.75rem",
+            "gutter-mobile": "1rem",
+            "margin-mobile": "1rem",
+            "margin": "1.5rem",
+            "space-xl": "1.5rem",
+            "space-sm": "0.5rem",
+            "space-lg": "1rem",
+            "space-xs": "0.25rem",
+            "gutter": "1.5rem",
+            "space-4xl": "4.5rem",
+            "space-3xl": "3rem"
+          },
+          fontFamily: {
+            "label-sm": ["IBM Plex Sans", "sans-serif"],
+            "display": ["Libre Caslon Text", "serif"],
+            "body-sm": ["IBM Plex Sans", "sans-serif"],
+            "code-sm": ["JetBrains Mono", "monospace"],
+            "body-md": ["IBM Plex Sans", "sans-serif"],
+            "headline-lg": ["Libre Caslon Text", "serif"],
+            "code-md": ["JetBrains Mono", "monospace"],
+            "headline-md": ["IBM Plex Sans", "sans-serif"],
+            "label-md": ["IBM Plex Sans", "sans-serif"]
+          },
+          fontSize: {
+            "label-sm": ["11px", { lineHeight: "16px", letterSpacing: "0.04em", fontWeight: "600" }],
+            "display": ["40px", { lineHeight: "48px", letterSpacing: "-0.01em", fontWeight: "600" }],
+            "body-sm": ["14px", { lineHeight: "22px", fontWeight: "400" }],
+            "code-sm": ["12px", { lineHeight: "18px", fontWeight: "400" }],
+            "body-md": ["16px", { lineHeight: "26px", fontWeight: "400" }],
+            "headline-lg": ["28px", { lineHeight: "36px", fontWeight: "600" }],
+            "code-md": ["14px", { lineHeight: "22px", fontWeight: "400" }],
+            "headline-md": ["20px", { lineHeight: "28px", fontWeight: "600" }],
+            "label-md": ["13px", { lineHeight: "20px", letterSpacing: "0.02em", fontWeight: "500" }]
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="bg-bg-dark text-text-primary font-body-md text-body-md antialiased min-h-screen flex flex-col justify-between">
+<!-- Top Navigation Header -->
+<header class="fixed top-0 left-0 right-0 z-50 bg-bg-dark border-b border-panel-border">
+<div class="h-16 max-w-[1120px] mx-auto px-margin flex items-center justify-between gap-space-lg">
+<div class="flex items-center gap-space-md shrink-0">
+<img alt="Record Verifier Seal Logo" class="h-8 w-auto object-contain brightness-90 contrast-125" src="https://lh3.googleusercontent.com/aida/AEtjO1Xns-pu9F9K2j33pbkEiqDZBSZFOsThfeff66iUbgdiZLgOCxsGwVamFfsjf82iIck5Jn-XJkjTsAlgKaarIfNQYXnBpcOlZ5eBrykqQWs-QpgATkVY7-8u0VbMNtKzMCbFOccRfCfEJvq5jTO6AYPMwog6NyR8A62PSSGfNvPdFWCmlk3pJ4fUsOFRAPTB6f8JtvSFOmCgq36j37Cg7raAWEyZFuI8Ww3SnWIc5vUk"/>
+<span class="font-display text-headline-md text-text-heading tracking-tight select-none">Record Verifier</span>
+</div>
+<nav class="hidden md:flex items-center gap-space-xl">
+<a aria-current="page" class="transition-colors py-space-xs text-text-primary font-semibold underline decoration-2 underline-offset-8 decoration-accent" data-path="verify" href="#">Verify</a>
+<a class="font-label-md text-label-md text-text-muted hover:text-text-primary transition-colors py-space-xs" data-path="ask" href="#">Ask</a>
+<a class="font-label-md text-label-md text-text-muted hover:text-text-primary transition-colors py-space-xs" data-path="admin" href="#">Admin</a>
+<a class="font-label-md text-label-md text-text-muted hover:text-text-primary transition-colors py-space-xs" data-path="results" href="#">Results</a>
+</nav>
+<div class="flex items-center gap-space-md shrink-0">
+<button aria-label="Toggle Appearance Mode" class="w-9 h-9 rounded-lg border border-panel-border bg-panel-dark text-text-muted hover:text-text-primary hover:bg-inset-dark flex items-center justify-center transition-colors" type="button">
+<span class="material-symbols-outlined text-[19px]">dark_mode</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-inset-dark border border-panel-border flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-text-primary text-[18px]">person</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="w-full pt-16 flex-grow bg-bg-dark">
+<div class="max-w-[1120px] mx-auto px-margin py-space-3xl">
+<div class="flex flex-col w-full">
+<div class="max-w-[760px] mx-auto w-full flex flex-col gap-space-3xl">
+<!-- Header Section -->
+<header class="flex flex-col gap-space-sm text-left">
+<div class="flex items-center gap-space-xs text-accent font-label-sm text-label-sm tracking-widest uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-accent"></span>
+<span>Public Ledger Inspection</span>
+</div>
+<h1 class="font-headline-lg text-display text-text-heading tracking-tight leading-tight">
+              Check a certificate against its registered record
+            </h1>
+<p class="font-body-md text-body-md text-text-muted leading-relaxed">
+              Compare the cryptographic fingerprint of any issued academic credential against its ledger anchor.
+            </p>
+</header>
+<!-- Verification Form Card -->
+<section class="bg-panel-dark border border-panel-border rounded-xl p-space-2xl shadow-sm flex flex-col gap-space-xl">
+<form class="flex flex-col gap-space-xl" id="verifyForm" onsubmit="event.preventDefault(); runVerification();">
+<!-- Record ID Input -->
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-md text-label-md text-text-primary font-medium flex items-center justify-between" for="recordId">
+<span>Record ID</span>
+<span class="font-code-sm text-code-sm text-text-muted">Format: CERT-XXXX</span>
+</label>
+<div class="relative flex items-center">
+<input class="w-full h-11 px-space-md font-code-md text-code-md text-text-primary bg-inset-dark border border-panel-border rounded-lg placeholder-text-muted/50 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent shadow-none transition-all" id="recordId" placeholder="e.g. CERT-104" required="" type="text" value="CERT-104"/>
+<span class="absolute right-3 flex items-center pointer-events-none text-text-muted">
+<span class="material-symbols-outlined text-[18px]">tag</span>
+</span>
+</div>
+<p class="font-body-sm text-body-sm text-text-muted">
+                  The unique canonical registry identifier printed on the official document footer.
+                </p>
+</div>
+<!-- Dropzone Container -->
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-md text-label-md text-text-primary font-medium">Credential File (PDF)</label>
+<div class="bg-inset-dark border border-panel-border rounded-xl p-space-xl flex flex-col items-center justify-center text-center cursor-pointer transition-colors relative" id="dropzone">
+<div class="w-10 h-10 rounded-full bg-panel-dark border border-panel-border flex items-center justify-center text-text-muted shadow-sm mb-space-sm">
+<span class="material-symbols-outlined text-[22px]">upload_file</span>
+</div>
+<p class="font-body-md text-body-md text-text-primary font-medium">
+                    Drop a PDF here or browse
+                  </p>
+<p class="font-body-sm text-code-sm text-text-muted mt-space-xs">
+                    Direct client-side SHA-256 computation • Max 25 MB
+                  </p>
+<!-- Attached File Chip -->
+<div class="mt-space-md bg-panel-dark border border-panel-border px-space-md py-space-sm rounded-lg shadow-sm flex items-center gap-space-sm max-w-full">
+<span class="material-symbols-outlined text-status-verified-text text-[18px]">verified</span>
+<div class="flex flex-col text-left truncate">
+<span class="font-code-sm text-code-sm text-text-primary truncate font-medium">CERT-104_Degree_Conferral.pdf</span>
+<span class="font-code-sm text-[11px] text-text-muted">1.4 MB • SHA-256 Ready</span>
+</div>
+<button aria-label="Remove uploaded file" class="ml-space-sm text-text-muted hover:text-status-mismatch-text transition-colors p-1" type="button">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Action Button -->
+<div class="flex items-center justify-between pt-space-xs">
+<span class="font-body-sm text-body-sm text-text-muted flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">lock</span>
+                  Files never leave your local browser
+                </span>
+<button class="min-h-[44px] px-space-xl bg-accent hover:bg-accent-hover active:translate-y-px text-bg-dark font-label-md text-label-md font-semibold rounded-lg flex items-center justify-center gap-space-sm shadow-sm transition-all select-none" id="submitBtn" type="submit">
+<span class="material-symbols-outlined text-[18px]">task_alt</span>
+<span>Verify file</span>
+</button>
+</div>
+</form>
+</section>
+<!-- Result Card (Verified State) -->
+<section class="bg-panel-dark border border-panel-border rounded-xl p-space-2xl shadow-sm flex flex-col gap-space-xl" id="resultCard">
+<!-- Seal & Status Header -->
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-space-lg pb-space-lg">
+<div class="flex items-center gap-space-lg">
+<!-- 56px Official Verified Seal Mark -->
+<div class="w-14 h-14 rounded-full bg-status-verified-bg border border-panel-border flex items-center justify-center shrink-0 p-1">
+<div class="w-full h-full rounded-full flex items-center justify-center bg-panel-dark">
+<span class="material-symbols-outlined text-status-verified-text text-[26px]">check_circle</span>
+</div>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-sm">
+<h2 class="font-headline-lg text-headline-lg text-text-heading leading-tight">
+                      Verified
+                    </h2>
+<span class="font-label-sm text-label-sm px-2.5 py-0.5 rounded-md bg-status-verified-bg text-status-verified-text uppercase tracking-wider">
+                      Matches registered record
+                    </span>
+</div>
+<p class="font-body-md text-body-md text-text-primary mt-space-xs">
+                    This file matches the registered record precisely byte-for-byte.
+                  </p>
+</div>
+</div>
+<button class="hidden sm:flex items-center gap-1.5 font-label-md text-label-md text-text-muted hover:text-text-primary bg-inset-dark border border-panel-border px-3 py-1.5 rounded-lg transition-colors" onclick="window.print()" type="button">
+<span class="material-symbols-outlined text-[16px]">print</span>
+<span>Proof Slip</span>
+</button>
+</div>
+<!-- Hash Inspection Blocks (Side by Side) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-lg">
+<!-- Column 1: Computed from File -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between font-label-md text-label-md text-text-muted">
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[15px]">description</span>
+                    Computed from your file
+                  </span>
+<span class="font-code-sm text-[11px] text-status-verified-text font-medium">SHA-256</span>
+</div>
+<div class="bg-inset-dark border border-panel-border rounded-lg p-space-md flex flex-col justify-between gap-space-md">
+<div class="font-code-sm text-code-sm text-text-primary font-mono tracking-tight break-all leading-relaxed select-all">
+<span class="text-status-verified-text font-semibold">9f2c41ab</span> 7d03e6c1 58b9a0fe 2c47d1e3 
+                    a6b80c95 1e7f3d42 c08a5b17 e92d64f0
+                  </div>
+<div class="flex items-center justify-between pt-space-xs">
+<span class="font-code-sm text-[11px] text-text-muted">Length: 64 hex characters</span>
+<button class="flex items-center gap-1 font-label-sm text-label-sm text-text-primary hover:text-accent bg-panel-dark border border-panel-border px-2.5 py-1 rounded transition-colors" onclick="copyToClipboard('9f2c41ab7d03e6c158b9a0fe2c47d1e3a6b80c951e7f3d42c08a5b17e92d64f0', this)" title="Copy hash to clipboard" type="button">
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+<span>Copy</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Column 2: Registered on Ledger -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between font-label-md text-label-md text-text-muted">
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[15px]">account_balance</span>
+                    Registered on the blockchain
+                  </span>
+<span class="font-code-sm text-[11px] text-status-verified-text font-medium">IMMUTABLE ANCHOR</span>
+</div>
+<div class="bg-inset-dark border border-panel-border rounded-lg p-space-md flex flex-col justify-between gap-space-md">
+<div class="font-code-sm text-code-sm text-text-primary font-mono tracking-tight break-all leading-relaxed select-all">
+<span class="text-status-verified-text font-semibold">9f2c41ab</span> 7d03e6c1 58b9a0fe 2c47d1e3 
+                    a6b80c95 1e7f3d42 c08a5b17 e92d64f0
+                  </div>
+<div class="flex items-center justify-between pt-space-xs">
+<span class="font-code-sm text-[11px] text-status-verified-text flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">check</span> Identical Match
+                    </span>
+<button class="flex items-center gap-1 font-label-sm text-label-sm text-text-primary hover:text-accent bg-panel-dark border border-panel-border px-2.5 py-1 rounded transition-colors" onclick="copyToClipboard('9f2c41ab7d03e6c158b9a0fe2c47d1e3a6b80c951e7f3d42c08a5b17e92d64f0', this)" title="Copy hash to clipboard" type="button">
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+<span>Copy</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Archival Metadata Row -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-space-md pt-space-md bg-inset-dark border border-panel-border p-space-md rounded-lg">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-text-muted uppercase tracking-wider">Registered Timestamp</span>
+<span class="font-code-sm text-code-sm text-text-primary mt-0.5">14 Oct 2024, 09:42 UTC</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-text-muted uppercase tracking-wider">Ledger Block</span>
+<span class="font-code-sm text-code-sm text-text-primary mt-0.5 font-semibold">#4,819,204</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-text-muted uppercase tracking-wider">Issuer Authority</span>
+<span class="font-body-sm text-body-sm text-text-primary truncate mt-0.5" title="University Registrar Office (Public Key ID: reg_uk_oxf_01)">
+                  Oxford Registrar (<span class="font-code-sm text-[11px] text-text-muted">reg_uk_oxf_01</span>)
+                </span>
+</div>
+</div>
+</section>
+<!-- Verification System Legend -->
+<footer class="flex flex-col gap-space-sm pt-space-md">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-text-muted uppercase tracking-wider">System verification states:</span>
+<span class="font-body-sm text-code-sm text-text-muted">5 Formal Evaluator Responses</span>
+</div>
+<div class="flex flex-wrap items-center gap-space-xs">
+<!-- 1. Verified -->
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-status-verified-bg text-status-verified-text font-label-sm text-label-sm border border-panel-border">
+<span class="material-symbols-outlined text-[14px]">check</span>
+<span>Verified</span>
+</div>
+<!-- 2. Mismatch -->
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-status-mismatch-bg text-status-mismatch-text font-label-sm text-label-sm border border-panel-border">
+<span class="material-symbols-outlined text-[14px]">close</span>
+<span>Mismatch</span>
+</div>
+<!-- 3. Revoked -->
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-status-revoked-bg text-status-revoked-text font-label-sm text-label-sm border border-panel-border">
+<span class="material-symbols-outlined text-[14px]">block</span>
+<span>Revoked</span>
+</div>
+<!-- 4. Not found -->
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-status-notfound-bg text-status-notfound-text font-label-sm text-label-sm border border-panel-border">
+<span class="material-symbols-outlined text-[14px]">search_off</span>
+<span>Not found</span>
+</div>
+<!-- 5. Needs clarification -->
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-status-clarify-bg text-status-clarify-text font-label-sm text-label-sm border border-panel-border">
+<span class="material-symbols-outlined text-[14px]">help_outline</span>
+<span>Needs clarification</span>
+</div>
+</div>
+</footer>
+</div>
+</div>
+</div>
+</main>
+<!-- Global Footer -->
+<footer class="w-full bg-bg-dark border-t border-panel-border py-space-2xl">
+<div class="max-w-[1120px] mx-auto px-margin flex flex-col md:flex-row items-center justify-between gap-space-md text-center md:text-left">
+<p class="font-label-md text-label-md text-text-muted max-w-2xl leading-relaxed">
+        A match shows the file is identical to what was registered. It doesn't prove who issued it or that its contents are true.
+      </p>
+<div class="font-label-md text-label-md text-text-muted shrink-0 flex items-center gap-space-sm">
+<span class="inline-block w-2 h-2 rounded-full bg-accent"></span>
+<span>Institutional Registry © 2025</span>
+</div>
+</div>
+</footer>
+<script>
+    function copyToClipboard(text, triggerEl) {
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text);
+      } else {
+        const input = document.createElement('textarea');
+        input.value = text;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+      }
+      
+      const label = triggerEl.querySelector('span:last-child');
+      const originalText = label.textContent;
+      label.textContent = 'Copied';
+      setTimeout(() => {
+        label.textContent = originalText;
+      }, 1500);
+    }
+
+    function runVerification() {
+      const btn = document.getElementById('submitBtn');
+      const resultCard = document.getElementById('resultCard');
+      btn.style.opacity = '0.7';
+      btn.innerHTML = '<span class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span><span>Calculating...</span>';
+      
+      setTimeout(() => {
+        btn.style.opacity = '1';
+        btn.innerHTML = '<span class="material-symbols-outlined text-[18px]">task_alt</span><span>Verify file</span>';
+        resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 400);
+    }
+  </script>
+</body></html>
