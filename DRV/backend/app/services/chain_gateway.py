@@ -250,6 +250,21 @@ class ChainGateway:
         except (Web3Exception, OSError) as e:
             raise ChainUnavailableError(f"RPC failure in isRevoked: {e}") from e
 
+    def get_record(self, record_id: str) -> dict[str, Any] | None:
+        """Call contract to get full record details or None if not found."""
+        res = self.verify_hash(record_id, "0" * 64)
+        if res.get("state") == "NOT_FOUND":
+            return None
+        return {
+            "record_id": record_id,
+            "file_hash": res.get("registered_hash"),
+            "revoked": res.get("revoked", False),
+            "doc_type": res.get("doc_type"),
+            "registered_at": res.get("registered_at"),
+            "revoked_at": res.get("revoked_at"),
+            "reason": res.get("reason"),
+        }
+
     def register_record(
         self,
         record_id: str,
