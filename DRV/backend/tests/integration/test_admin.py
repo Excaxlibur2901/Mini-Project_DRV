@@ -110,11 +110,12 @@ def test_client(tmp_path, mock_chain):
     app.dependency_overrides[get_audit_logger] = lambda: test_audit
 
     # Override db_path in settings
-    from app.config import get_settings
-    orig_settings = get_settings()
-    app.dependency_overrides[get_settings] = lambda: orig_settings.model_copy(
-        update={"db_path": str(db_file)}
-    )
+    from app.config import get_settings as config_get_settings
+    from app.routers.verify import get_settings as verify_get_settings
+    orig_settings = config_get_settings()
+    overridden = orig_settings.model_copy(update={"db_path": str(db_file)})
+    app.dependency_overrides[config_get_settings] = lambda: overridden
+    app.dependency_overrides[verify_get_settings] = lambda: overridden
 
     client = TestClient(app)
     yield client

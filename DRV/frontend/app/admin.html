@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Record Verifier — Registry Administration</title>
   <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
   <style>
     .tab-btn {
       padding: 10px 20px;
@@ -56,6 +57,72 @@
     .modal-overlay.open .modal-card {
       transform: none;
     }
+    /* File drop zone */
+    .file-drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      padding: 28px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background-color 0.2s;
+      position: relative;
+    }
+    .file-drop-zone:hover,
+    .file-drop-zone.dragover {
+      border-color: var(--accent);
+      background-color: rgba(var(--accent-rgb, 59, 130, 246), 0.04);
+    }
+    .file-drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+    .file-drop-zone.has-file {
+      border-color: var(--status-verified-text);
+      background-color: var(--status-verified-bg);
+    }
+    /* Result boxes */
+    .result-box {
+      background-color: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 20px;
+      font-size: 13px;
+    }
+    .result-box.success { border-color: var(--status-verified-text); background-color: var(--status-verified-bg); }
+    .result-box.error   { border-color: var(--status-mismatch-text); background-color: var(--status-mismatch-bg); }
+    /* Login wall */
+    #loginWall { display: flex; }
+    #adminPanel { display: none; }
+    /* Spinner */
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid currentColor;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    /* Sample certs download strip */
+    .cert-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background-color: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 12px;
+      color: var(--text);
+      text-decoration: none;
+      transition: border-color 0.15s;
+    }
+    .cert-pill:hover { border-color: var(--accent); color: var(--accent); }
   </style>
 </head>
 <body>
@@ -83,128 +150,215 @@
     </div>
   </header>
 
-  <!-- Main Content Area -->
   <main class="container">
     <div style="max-width: 820px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px;">
 
-      <!-- Officer Status Strip -->
-      <section class="card reveal" style="padding: 16px 20px; background-color: var(--surface-2); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--ink);">
-            <span class="material-symbols-outlined" style="color: var(--accent); font-size: 18px;">verified_user</span>
-            <span>Master Registrar</span>
-          </div>
-          <span style="color: var(--border);">|</span>
-          <span class="font-mono" style="font-size: 12px; color: var(--text-muted);">
-            Officer ID: <strong style="color: var(--text);">registrar_admin_01</strong>
-          </span>
+      <!-- ══════════════════════════════════════════════════════════
+           LOGIN WALL  (shown when not authenticated)
+           ══════════════════════════════════════════════════════════ -->
+      <section id="loginWall" class="card reveal" style="flex-direction: column; align-items: center; gap: 20px; padding: 48px 32px;">
+        <div style="display: flex; align-items: center; gap: 10px; color: var(--accent);">
+          <span class="material-symbols-outlined" style="font-size: 40px;">admin_panel_settings</span>
+        </div>
+        <div style="text-align: center;">
+          <h1 style="font-size: 26px; color: var(--ink); margin-bottom: 6px;">Registrar Login</h1>
+          <p style="color: var(--text-muted); font-size: 14px;">Authenticate to access the Registry Administration panel.</p>
         </div>
 
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span class="badge badge-verified" style="font-size: 11px;">
-            <span style="width: 6px; height: 6px; border-radius: 50%; background-color: var(--status-verified-text);"></span>
-            FIDO2 Hardware Key Verified
-          </span>
-        </div>
-      </section>
-
-      <!-- Page Title -->
-      <section class="reveal">
-        <h1 style="font-size: 32px; color: var(--ink); margin-bottom: 6px;">Registry Administration</h1>
-        <p style="color: var(--text-muted); font-size: 15px;">
-          Authorised university registrar portal for inscribing new credential hashes and nullifying invalid records.
-        </p>
-      </section>
-
-      <!-- Operation Tabs Strip -->
-      <div style="background-color: var(--surface-2); padding: 4px; border-radius: 8px; display: inline-flex; gap: 4px; border: 1px solid var(--border);" class="reveal">
-        <button type="button" id="tabRegisterBtn" class="tab-btn active">
-          <span class="material-symbols-outlined" style="font-size: 18px;">add_circle</span>
-          <span>Register Record</span>
-        </button>
-        <button type="button" id="tabRevokeBtn" class="tab-btn">
-          <span class="material-symbols-outlined" style="font-size: 18px; color: var(--status-mismatch-text);">block</span>
-          <span>Revoke Record</span>
-        </button>
-      </div>
-
-      <!-- TAB 1: Register Record Form -->
-      <section id="registerSection" class="card reveal">
-        <h2 style="font-size: 20px; color: var(--ink); margin-bottom: 8px;">Register New Academic Record</h2>
-        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 24px;">
-          Inscribe an immutable SHA-256 document fingerprint onto the blockchain ledger.
-        </p>
-
-        <form id="adminRegisterForm" style="display: flex; flex-direction: column; gap: 18px;">
+        <form id="loginForm" style="width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 14px;">
           <div class="form-group" style="margin-bottom: 0;">
-            <label for="regRecordId" class="form-label">
-              <span>Record ID</span>
-              <span class="font-mono" style="font-size: 11px; color: var(--text-muted);">Format: CERT-XXXX</span>
-            </label>
-            <input type="text" id="regRecordId" class="form-input font-mono" placeholder="e.g. CERT-205" required>
+            <label for="loginUsername" class="form-label">Username</label>
+            <input type="text" id="loginUsername" class="form-input" placeholder="admin" autocomplete="username" value="admin">
           </div>
-
           <div class="form-group" style="margin-bottom: 0;">
-            <label for="regDocType" class="form-label">Document Type</label>
-            <select id="regDocType" class="form-input" style="cursor: pointer;">
-              <option value="1">1 — Degree Certificate</option>
-              <option value="2">2 — Official Transcript</option>
-              <option value="3">3 — Provisional Certificate</option>
-              <option value="4">4 — Academic Award</option>
-            </select>
+            <label for="loginPassword" class="form-label">Password</label>
+            <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" autocomplete="current-password">
           </div>
-
-          <div class="form-group" style="margin-bottom: 0;">
-            <label for="regFileHash" class="form-label">
-              <span>SHA-256 File Digest</span>
-              <span class="font-mono" style="font-size: 11px; color: var(--text-muted);">64 Hex Characters</span>
-            </label>
-            <input type="text" id="regFileHash" class="form-input font-mono" placeholder="e.g. 9f2c41ab... (or drop PDF to compute)" required>
-          </div>
-
-          <div style="display: flex; justify-content: flex-end; margin-top: 12px;">
-            <button type="submit" id="submitRegBtn" class="btn btn-primary">
-              <span class="material-symbols-outlined" style="font-size: 18px;">save</span>
-              <span>Register on Ledger</span>
-            </button>
-          </div>
+          <div id="loginError" style="display:none; color: var(--status-mismatch-text); font-size: 13px;"></div>
+          <button type="submit" id="loginBtn" class="btn btn-primary" style="width: 100%; justify-content: center;">
+            <span class="material-symbols-outlined" style="font-size: 18px;">lock_open</span>
+            <span>Sign In</span>
+          </button>
         </form>
       </section>
 
-      <!-- TAB 2: Revoke Record Form -->
-      <section id="revokeSection" class="card reveal" style="display: none;">
-        <h2 style="font-size: 20px; color: var(--ink); margin-bottom: 8px;">Revoke Academic Record</h2>
-        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 24px;">
-          Permanently mark a credential as revoked. Per architectural specification D-13, this requires two-step confirmation.
-        </p>
+      <!-- ══════════════════════════════════════════════════════════
+           ADMIN PANEL  (shown after login)
+           ══════════════════════════════════════════════════════════ -->
+      <div id="adminPanel" style="display: flex; flex-direction: column; gap: 24px;">
 
-        <form id="adminRevokeForm" style="display: flex; flex-direction: column; gap: 18px;">
-          <div class="form-group" style="margin-bottom: 0;">
-            <label for="revRecordId" class="form-label">
-              <span>Target Record ID</span>
-              <span class="font-mono" style="font-size: 11px; color: var(--text-muted);">Existing ID</span>
-            </label>
-            <input type="text" id="revRecordId" class="form-input font-mono" placeholder="e.g. CERT-104" required>
+        <!-- Officer Status Strip -->
+        <section class="card reveal" style="padding: 16px 20px; background-color: var(--surface-2); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--ink);">
+              <span class="material-symbols-outlined" style="color: var(--accent); font-size: 18px;">verified_user</span>
+              <span>Master Registrar</span>
+            </div>
+            <span style="color: var(--border);">|</span>
+            <span class="font-mono" style="font-size: 12px; color: var(--text-muted);">
+              Session: <strong id="sessionLabel" style="color: var(--text);">active</strong>
+            </span>
           </div>
-
-          <div class="form-group" style="margin-bottom: 0;">
-            <label for="revReasonCode" class="form-label">Revocation Reason Code</label>
-            <select id="revReasonCode" class="form-input" style="cursor: pointer;">
-              <option value="1">1 — Suspected Fraud or Forgery</option>
-              <option value="2">2 — Issued in Error</option>
-              <option value="3">3 — Superseded by New Version</option>
-              <option value="4">4 — Administrative Nullification</option>
-            </select>
-          </div>
-
-          <div style="display: flex; justify-content: flex-end; margin-top: 12px;">
-            <button type="button" id="openRevokeConfirmBtn" class="btn" style="background-color: var(--status-mismatch-text); color: #fff;">
-              <span class="material-symbols-outlined" style="font-size: 18px;">warning</span>
-              <span>Initiate Revocation</span>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="badge badge-verified" style="font-size: 11px;">
+              <span style="width: 6px; height: 6px; border-radius: 50%; background-color: var(--status-verified-text);"></span>
+              Authenticated
+            </span>
+            <button id="logoutBtn" class="btn btn-secondary" style="font-size: 12px; padding: 4px 10px;">
+              <span class="material-symbols-outlined" style="font-size: 15px;">logout</span>
+              Logout
             </button>
           </div>
-        </form>
-      </section>
+        </section>
+
+        <!-- Page Title -->
+        <section class="reveal">
+          <h1 style="font-size: 32px; color: var(--ink); margin-bottom: 6px;">Registry Administration</h1>
+          <p style="color: var(--text-muted); font-size: 15px;">
+            Upload a real PDF certificate to register its SHA-256 fingerprint on-chain, or revoke an existing record.
+          </p>
+        </section>
+
+        <!-- Sample Certs Download -->
+        <section class="card reveal" style="background-color: var(--surface-2); padding: 16px 20px;">
+          <p style="font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 10px;">
+            <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle;">download</span>
+            Sample Certificates for Testing
+          </p>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <a href="/data/sample_certs/sample_cert_101.pdf" class="cert-pill" download>
+              <span class="material-symbols-outlined" style="font-size: 15px;">picture_as_pdf</span>
+              CERT-101 (Degree, active)
+            </a>
+            <a href="/data/sample_certs/sample_cert_102.pdf" class="cert-pill" download>
+              <span class="material-symbols-outlined" style="font-size: 15px;">picture_as_pdf</span>
+              CERT-102 (Transcript, active)
+            </a>
+            <a href="/data/sample_certs/sample_cert_103.pdf" class="cert-pill" download>
+              <span class="material-symbols-outlined" style="font-size: 15px;">picture_as_pdf</span>
+              CERT-103 (Degree, revoked)
+            </a>
+            <a href="/data/sample_certs/sample_cert_101_tampered.pdf" class="cert-pill" download>
+              <span class="material-symbols-outlined" style="font-size: 15px; color: var(--status-mismatch-text);">warning</span>
+              CERT-101 tampered (MISMATCH demo)
+            </a>
+          </div>
+          <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">
+            After downloading, go to the <a href="index.html" style="color: var(--accent);">Verify page</a> and upload one of these files to test the full blockchain verification flow.
+          </p>
+        </section>
+
+        <!-- Operation Tabs Strip -->
+        <div style="background-color: var(--surface-2); padding: 4px; border-radius: 8px; display: inline-flex; gap: 4px; border: 1px solid var(--border);" class="reveal">
+          <button type="button" id="tabRegisterBtn" class="tab-btn active">
+            <span class="material-symbols-outlined" style="font-size: 18px;">add_circle</span>
+            <span>Register Record</span>
+          </button>
+          <button type="button" id="tabRevokeBtn" class="tab-btn">
+            <span class="material-symbols-outlined" style="font-size: 18px; color: var(--status-mismatch-text);">block</span>
+            <span>Revoke Record</span>
+          </button>
+        </div>
+
+        <!-- TAB 1: Register Record Form -->
+        <section id="registerSection" class="card reveal">
+          <h2 style="font-size: 20px; color: var(--ink); margin-bottom: 6px;">Register New Academic Record</h2>
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 24px;">
+            Upload the original PDF certificate. The server computes its SHA-256 and inscribes it on the blockchain — the file never leaves the server's memory.
+          </p>
+
+          <form id="adminRegisterForm" style="display: flex; flex-direction: column; gap: 18px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="regRecordId" class="form-label">
+                <span>Record ID</span>
+                <span class="font-mono" style="font-size: 11px; color: var(--text-muted);">Format: CERT-XXXX</span>
+              </label>
+              <input type="text" id="regRecordId" class="form-input font-mono" placeholder="e.g. CERT-205" required>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="regDocType" class="form-label">Document Type</label>
+              <select id="regDocType" class="form-input" style="cursor: pointer;">
+                <option value="degree">Degree Certificate</option>
+                <option value="marksheet">Official Transcript</option>
+                <option value="provisional">Provisional Certificate</option>
+                <option value="award">Academic Award</option>
+              </select>
+            </div>
+
+            <!-- File upload drop zone -->
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">
+                <span>Certificate PDF</span>
+                <span style="font-size: 11px; color: var(--text-muted);">Max 5 MB</span>
+              </label>
+              <div class="file-drop-zone" id="regDropZone">
+                <input type="file" id="regFile" accept=".pdf,application/pdf" required>
+                <div id="regDropLabel">
+                  <span class="material-symbols-outlined" style="font-size: 36px; color: var(--text-muted); display: block; margin-bottom: 8px;">upload_file</span>
+                  <p style="font-size: 14px; color: var(--text-muted); margin: 0;">Drag & drop a PDF here, or <strong style="color: var(--accent);">click to browse</strong></p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Computed hash preview (shown after selection) -->
+            <div id="regHashPreview" style="display: none;" class="result-box">
+              <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px; font-weight: 600;">FILE SELECTED</p>
+              <p id="regFileName" class="font-mono" style="font-size: 13px; color: var(--ink); word-break: break-all;"></p>
+              <p id="regFileSize" style="font-size: 11px; color: var(--text-muted); margin-top: 4px;"></p>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; margin-top: 4px;">
+              <button type="submit" id="submitRegBtn" class="btn btn-primary">
+                <span class="material-symbols-outlined" style="font-size: 18px;">save</span>
+                <span>Register on Ledger</span>
+              </button>
+            </div>
+          </form>
+
+          <!-- Register result -->
+          <div id="registerResult" style="display: none; margin-top: 20px;"></div>
+        </section>
+
+        <!-- TAB 2: Revoke Record Form -->
+        <section id="revokeSection" class="card reveal" style="display: none;">
+          <h2 style="font-size: 20px; color: var(--ink); margin-bottom: 6px;">Revoke Academic Record</h2>
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 24px;">
+            Permanently mark a credential as revoked. Per architectural specification D-13, this requires two-step confirmation.
+          </p>
+
+          <form id="adminRevokeForm" style="display: flex; flex-direction: column; gap: 18px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="revRecordId" class="form-label">
+                <span>Target Record ID</span>
+                <span class="font-mono" style="font-size: 11px; color: var(--text-muted);">Existing ID</span>
+              </label>
+              <input type="text" id="revRecordId" class="form-input font-mono" placeholder="e.g. CERT-103" required>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="revReasonCode" class="form-label">Revocation Reason Code</label>
+              <select id="revReasonCode" class="form-input" style="cursor: pointer;">
+                <option value="1">1 — Suspected Fraud or Forgery</option>
+                <option value="2">2 — Issued in Error</option>
+                <option value="3">3 — Superseded by New Version</option>
+                <option value="4">4 — Administrative Nullification</option>
+              </select>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; margin-top: 12px;">
+              <button type="button" id="openRevokeConfirmBtn" class="btn" style="background-color: var(--status-mismatch-text); color: #fff;">
+                <span class="material-symbols-outlined" style="font-size: 18px;">warning</span>
+                <span>Initiate Revocation</span>
+              </button>
+            </div>
+          </form>
+
+          <!-- Revoke result -->
+          <div id="revokeResult" style="display: none; margin-top: 20px;"></div>
+        </section>
+
+      </div><!-- end #adminPanel -->
 
     </div>
   </main>
@@ -222,13 +376,16 @@
         </div>
       </div>
 
-      <p id="modalConfirmText" style="font-size: 14px; color: var(--text); line-height: 1.5; margin-bottom: 24px;">
-        Are you certain you want to revoke <strong id="modalTargetId" class="font-mono">CERT-104</strong> on the blockchain? This action is permanent and cannot be undone.
+      <p style="font-size: 14px; color: var(--text); line-height: 1.5; margin-bottom: 24px;">
+        Are you certain you want to revoke <strong id="modalTargetId" class="font-mono">—</strong> on the blockchain?
+        <br><br>Reason: <strong id="modalReasonText">—</strong>
+        <br><br>This action is <strong>permanent and cannot be undone</strong>.
       </p>
 
       <div style="display: flex; justify-content: flex-end; gap: 12px;">
         <button type="button" id="modalCancelBtn" class="btn btn-secondary">Cancel</button>
         <button type="button" id="modalExecuteBtn" class="btn" style="background-color: var(--status-mismatch-text); color: #fff;">
+          <span class="material-symbols-outlined" style="font-size: 18px;">delete_forever</span>
           Confirm &amp; Revoke
         </button>
       </div>
@@ -249,13 +406,128 @@
   </footer>
 
   <script type="module">
-    import './js/app.js';
+    import { initTheme, initReveals } from './js/app.js';
+    import { adminLogin, adminLogout, registerRecord, revokeRecord } from './js/api.js';
 
-    const tabRegisterBtn = document.getElementById('tabRegisterBtn');
-    const tabRevokeBtn = document.getElementById('tabRevokeBtn');
-    const registerSection = document.getElementById('registerSection');
-    const revokeSection = document.getElementById('revokeSection');
+    initTheme();
+    initReveals();
 
+    // ── State ──────────────────────────────────────────────────────────────
+    let csrfToken = '';
+
+    const REASON_LABELS = {
+      '1': 'Suspected Fraud or Forgery',
+      '2': 'Issued in Error',
+      '3': 'Superseded by New Version',
+      '4': 'Administrative Nullification',
+    };
+
+    // ── DOM refs ───────────────────────────────────────────────────────────
+    const loginWall   = document.getElementById('loginWall');
+    const adminPanel  = document.getElementById('adminPanel');
+    const loginForm   = document.getElementById('loginForm');
+    const loginError  = document.getElementById('loginError');
+    const loginBtn    = document.getElementById('loginBtn');
+
+    const logoutBtn   = document.getElementById('logoutBtn');
+
+    const tabRegisterBtn   = document.getElementById('tabRegisterBtn');
+    const tabRevokeBtn     = document.getElementById('tabRevokeBtn');
+    const registerSection  = document.getElementById('registerSection');
+    const revokeSection    = document.getElementById('revokeSection');
+
+    const adminRegisterForm = document.getElementById('adminRegisterForm');
+    const regRecordId       = document.getElementById('regRecordId');
+    const regDocType        = document.getElementById('regDocType');
+    const regFile           = document.getElementById('regFile');
+    const regDropZone       = document.getElementById('regDropZone');
+    const regDropLabel      = document.getElementById('regDropLabel');
+    const regHashPreview    = document.getElementById('regHashPreview');
+    const regFileName       = document.getElementById('regFileName');
+    const regFileSize       = document.getElementById('regFileSize');
+    const submitRegBtn      = document.getElementById('submitRegBtn');
+    const registerResult    = document.getElementById('registerResult');
+
+    const adminRevokeForm    = document.getElementById('adminRevokeForm');
+    const revRecordIdInput   = document.getElementById('revRecordId');
+    const revReasonCode      = document.getElementById('revReasonCode');
+    const openRevokeConfirmBtn = document.getElementById('openRevokeConfirmBtn');
+    const revokeResult       = document.getElementById('revokeResult');
+
+    const modal          = document.getElementById('confirmModal');
+    const modalTargetId  = document.getElementById('modalTargetId');
+    const modalReasonText = document.getElementById('modalReasonText');
+    const modalCancelBtn = document.getElementById('modalCancelBtn');
+    const modalExecuteBtn = document.getElementById('modalExecuteBtn');
+
+    // ── Helpers ────────────────────────────────────────────────────────────
+    function formatBytes(bytes) {
+      if (bytes < 1024) return `${bytes} B`;
+      if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
+      return `${(bytes / 1048576).toFixed(2)} MB`;
+    }
+
+    function showResult(container, html, type = 'success') {
+      container.style.display = 'block';
+      container.className = `result-box ${type}`;
+      container.innerHTML = html;
+    }
+
+    function setLoading(btn, loading, label = 'Processing…') {
+      if (loading) {
+        btn.disabled = true;
+        btn.dataset.origHtml = btn.innerHTML;
+        btn.innerHTML = `<span class="spinner"></span> ${label}`;
+      } else {
+        btn.disabled = false;
+        btn.innerHTML = btn.dataset.origHtml || btn.innerHTML;
+      }
+    }
+
+    // ── Auth ───────────────────────────────────────────────────────────────
+    function showPanel() {
+      loginWall.style.display = 'none';
+      adminPanel.style.display = 'flex';
+      adminPanel.style.flexDirection = 'column';
+    }
+
+    function showLoginWall() {
+      loginWall.style.display = 'flex';
+      adminPanel.style.display = 'none';
+      csrfToken = '';
+    }
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      loginError.style.display = 'none';
+      setLoading(loginBtn, true, 'Authenticating…');
+
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value;
+
+      try {
+        const { ok, data } = await adminLogin(username, password);
+        if (ok && data?.result?.csrf_token) {
+          csrfToken = data.result.csrf_token;
+          showPanel();
+        } else {
+          loginError.textContent = data?.detail?.message || data?.error?.message || 'Invalid credentials.';
+          loginError.style.display = 'block';
+        }
+      } catch (err) {
+        loginError.textContent = 'Network error — is the server running?';
+        loginError.style.display = 'block';
+      } finally {
+        setLoading(loginBtn, false);
+      }
+    });
+
+    logoutBtn.addEventListener('click', async () => {
+      await adminLogout();
+      showLoginWall();
+    });
+
+    // ── Tabs ───────────────────────────────────────────────────────────────
     tabRegisterBtn.addEventListener('click', () => {
       tabRegisterBtn.classList.add('active');
       tabRevokeBtn.classList.remove('active');
@@ -270,33 +542,128 @@
       registerSection.style.display = 'none';
     });
 
-    // Confirmation Modal
-    const modal = document.getElementById('confirmModal');
-    const openRevokeConfirmBtn = document.getElementById('openRevokeConfirmBtn');
-    const modalCancelBtn = document.getElementById('modalCancelBtn');
-    const modalExecuteBtn = document.getElementById('modalExecuteBtn');
-    const revRecordIdInput = document.getElementById('revRecordId');
-    const modalTargetId = document.getElementById('modalTargetId');
+    // ── File Drop Zone ─────────────────────────────────────────────────────
+    regFile.addEventListener('change', () => {
+      const f = regFile.files[0];
+      if (!f) return;
+      regDropZone.classList.add('has-file');
+      regDropLabel.innerHTML = `
+        <span class="material-symbols-outlined" style="font-size: 36px; color: var(--status-verified-text); display: block; margin-bottom: 8px;">check_circle</span>
+        <p style="font-size: 14px; color: var(--text); margin: 0; font-weight: 600;">${f.name}</p>
+        <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Click to change file</p>`;
+      regHashPreview.style.display = 'block';
+      regFileName.textContent = f.name;
+      regFileSize.textContent = formatBytes(f.size);
+    });
 
-    openRevokeConfirmBtn.addEventListener('click', () => {
-      const id = revRecordIdInput.value.trim();
-      if (!id) {
-        alert('Please specify the record ID to revoke.');
+    regDropZone.addEventListener('dragover', (e) => { e.preventDefault(); regDropZone.classList.add('dragover'); });
+    regDropZone.addEventListener('dragleave', () => regDropZone.classList.remove('dragover'));
+    regDropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      regDropZone.classList.remove('dragover');
+      if (e.dataTransfer.files.length) {
+        regFile.files = e.dataTransfer.files;
+        regFile.dispatchEvent(new Event('change'));
+      }
+    });
+
+    // ── Register Submit ────────────────────────────────────────────────────
+    adminRegisterForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      registerResult.style.display = 'none';
+
+      if (!regFile.files[0]) {
+        showResult(registerResult, '<strong>Please select a PDF file to register.</strong>', 'error');
         return;
       }
+
+      const formData = new FormData();
+      formData.append('record_id', regRecordId.value.trim().toUpperCase());
+      formData.append('doc_type', regDocType.value);
+      formData.append('file', regFile.files[0]);
+
+      setLoading(submitRegBtn, true, 'Hashing & registering…');
+
+      try {
+        const { ok, data } = await registerRecord(formData, csrfToken);
+        if (ok && data?.result) {
+          const r = data.result;
+          showResult(registerResult, `
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+              <span class="material-symbols-outlined" style="color: var(--status-verified-text); font-size: 22px;">verified</span>
+              <strong style="font-size: 15px;">Registration Successful</strong>
+            </div>
+            <table style="font-size: 12px; width: 100%; border-collapse: collapse;">
+              <tr><td style="color: var(--text-muted); padding: 3px 0; width: 120px;">Record ID</td><td class="font-mono"><strong>${r.record_id}</strong></td></tr>
+              <tr><td style="color: var(--text-muted); padding: 3px 0;">SHA-256 Hash</td><td class="font-mono" style="word-break: break-all; font-size: 11px;">${r.file_hash || '—'}</td></tr>
+              <tr><td style="color: var(--text-muted); padding: 3px 0;">TX Hash</td><td class="font-mono" style="word-break: break-all; font-size: 11px;">${r.tx_hash || '—'}</td></tr>
+              <tr><td style="color: var(--text-muted); padding: 3px 0;">Block</td><td class="font-mono">${r.block_number ?? '—'}</td></tr>
+            </table>
+            <p style="font-size: 11px; color: var(--text-muted); margin-top: 10px;">
+              The file hash is now immutably anchored on the blockchain. Upload the same file on the <a href="index.html" style="color: var(--accent);">Verify page</a> to test a MATCH.
+            </p>
+          `, 'success');
+        } else {
+          const msg = data?.error?.message || data?.detail?.message || JSON.stringify(data);
+          showResult(registerResult, `<strong>Registration failed:</strong><br>${msg}`, 'error');
+          if (data?.error?.code === 'E_UNAUTHORIZED') showLoginWall();
+        }
+      } catch (err) {
+        showResult(registerResult, `<strong>Network error:</strong> ${err.message}`, 'error');
+      } finally {
+        setLoading(submitRegBtn, false);
+      }
+    });
+
+    // ── Revoke Modal ───────────────────────────────────────────────────────
+    openRevokeConfirmBtn.addEventListener('click', () => {
+      const id = revRecordIdInput.value.trim().toUpperCase();
+      if (!id) { alert('Please specify the Record ID to revoke.'); return; }
       modalTargetId.textContent = id;
+      modalReasonText.textContent = REASON_LABELS[revReasonCode.value] || 'Unknown';
       modal.classList.add('open');
     });
 
-    modalCancelBtn.addEventListener('click', () => {
-      modal.classList.remove('open');
-    });
+    modalCancelBtn.addEventListener('click', () => modal.classList.remove('open'));
 
-    modalExecuteBtn.addEventListener('click', () => {
-      alert(`[Phase 6 Action] Revocation initiated for ${modalTargetId.textContent}. Admin signing will be wired in Phase 6.`);
-      modal.classList.remove('open');
+    modalExecuteBtn.addEventListener('click', async () => {
+      const id = revRecordIdInput.value.trim().toUpperCase();
+      const reason = parseInt(revReasonCode.value, 10);
+
+      setLoading(modalExecuteBtn, true, 'Revoking…');
+
+      try {
+        const { ok, data } = await revokeRecord(id, reason, csrfToken);
+        modal.classList.remove('open');
+
+        if (ok && data?.result) {
+          const r = data.result;
+          showResult(revokeResult, `
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+              <span class="material-symbols-outlined" style="color: var(--status-mismatch-text); font-size: 22px;">block</span>
+              <strong style="font-size: 15px;">Record Revoked</strong>
+            </div>
+            <table style="font-size: 12px; width: 100%; border-collapse: collapse;">
+              <tr><td style="color: var(--text-muted); padding: 3px 0; width: 120px;">Record ID</td><td class="font-mono"><strong>${r.record_id}</strong></td></tr>
+              <tr><td style="color: var(--text-muted); padding: 3px 0;">TX Hash</td><td class="font-mono" style="word-break: break-all; font-size: 11px;">${r.tx_hash || '—'}</td></tr>
+              <tr><td style="color: var(--text-muted); padding: 3px 0;">Block</td><td class="font-mono">${r.block_number ?? '—'}</td></tr>
+            </table>
+            <p style="font-size: 11px; color: var(--text-muted); margin-top: 10px;">
+              Future verification of this record will return <strong>REVOKED</strong>.
+            </p>
+          `, 'error');
+        } else {
+          const msg = data?.error?.message || data?.detail?.message || JSON.stringify(data);
+          showResult(revokeResult, `<strong>Revocation failed:</strong><br>${msg}`, 'error');
+          if (data?.error?.code === 'E_UNAUTHORIZED') showLoginWall();
+        }
+      } catch (err) {
+        modal.classList.remove('open');
+        showResult(revokeResult, `<strong>Network error:</strong> ${err.message}`, 'error');
+      } finally {
+        setLoading(modalExecuteBtn, false);
+      }
     });
   </script>
 </body>
 </html>
-

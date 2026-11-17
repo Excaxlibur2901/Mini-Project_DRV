@@ -26,7 +26,15 @@ typechain-types/
 *.db-journal
 *.db-wal
 *.db-shm
-data/
+
+# Data directory — keep sample certs, exclude runtime DB and verifier data
+data/verifier.db
+data/*.db
+data/*.log
+# Allow sample_certs to be committed for demo
+!data/
+!data/sample_certs/
+!data/sample_certs/*.pdf
 
 # Model files
 *.gguf

@@ -416,3 +416,15 @@ footer.site-footer {
   }
 }
 
+/* Hash character-diff highlighting (MISMATCH state) */
+.hash-match {
+  color: var(--status-verified-text);
+}
+.hash-diff {
+  color: var(--status-mismatch-text);
+  font-weight: 700;
+  background-color: var(--status-mismatch-bg);
+  border-radius: 2px;
+  padding: 0 1px;
+}
+

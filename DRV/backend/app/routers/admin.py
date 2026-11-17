@@ -263,7 +263,7 @@ async def register_record(
     file_hash_hex = ""
     if file:
         try:
-            file_hash_hex = await hash_upload_stream(file, max_upload_bytes=settings.max_upload_bytes)
+            file_hash_hex = hash_upload_stream(stream=file.file, max_bytes=settings.max_upload_bytes)
         except UploadValidationError as e:
             return JSONResponse(
                 status_code=e.status_code,
@@ -356,6 +356,7 @@ async def register_record(
                     "operation": "register",
                     "record_id": clean_id,
                     "registered_hash": file_hash_hex,
+                    "file_hash": file_hash_hex,
                     "tx_hash": tx_res["tx_hash"],
                     "tx_status": "confirmed",
                     "block_number": tx_res["block_number"],

@@ -47,6 +47,30 @@
         <p style="color: var(--text-muted); font-size: 16px;">
           Compare the cryptographic fingerprint of an issued academic credential against its immutable blockchain anchor.
         </p>
+
+        <!-- Sample Certificates Download Quick-Bar -->
+        <div style="margin-top: 14px; padding: 12px 16px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; font-size: 13px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+            <span style="font-weight: 600; color: var(--ink); display: flex; align-items: center; gap: 6px;">
+              <span class="material-symbols-outlined" style="font-size: 18px; color: var(--accent);">folder_open</span>
+              Try Real Sample Certificates:
+            </span>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+              <a href="/data/sample_certs/sample_cert_101.pdf" download class="btn btn-secondary" style="font-size: 11px; padding: 4px 8px; height: auto;">
+                📥 CERT-101 (Valid Degree)
+              </a>
+              <a href="/data/sample_certs/sample_cert_101_tampered.pdf" download class="btn btn-secondary" style="font-size: 11px; padding: 4px 8px; height: auto; color: var(--status-mismatch-text);">
+                ⚠️ CERT-101 (Tampered Copy)
+              </a>
+              <a href="/data/sample_certs/sample_cert_102.pdf" download class="btn btn-secondary" style="font-size: 11px; padding: 4px 8px; height: auto;">
+                📥 CERT-102 (Transcript)
+              </a>
+              <a href="/data/sample_certs/sample_cert_103.pdf" download class="btn btn-secondary" style="font-size: 11px; padding: 4px 8px; height: auto;">
+                🚫 CERT-103 (Revoked Degree)
+              </a>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- Verification Form Card -->
@@ -231,7 +255,7 @@
   <!-- Page Logic Script -->
   <script type="module">
     import { verifyFile } from './js/api.js';
-    import { computeClientSHA256, formatHashChunks, resolveHashEffect } from './js/hash-effect.js';
+    import { computeClientSHA256, formatHashChunks, resolveHashEffect, generateHashComparisonHtml } from './js/hash-effect.js';
     import { copyToClipboard } from './js/app.js';
 
     let selectedFile = null;
@@ -357,19 +381,21 @@
       sealIcon.className = 'seal';
 
       if (status === 'ok') {
-        const outcome = result.status; // VERIFIED, MISMATCH, NOT_FOUND, REVOKED
+        const outcome = (result.state || result.status || '').toUpperCase(); // MATCH, MISMATCH, NOT_FOUND, REVOKED
         
         computedHashDisplay.textContent = formatHashChunks(result.computed_hash || clientComputedHash);
-        registeredHashDisplay.textContent = formatHashChunks(result.registered_hash || '0'.repeat(64));
+        registeredHashDisplay.textContent = result.registered_hash 
+          ? formatHashChunks(result.registered_hash)
+          : '(No registered hash on ledger)';
 
         document.getElementById('metaRecordId').textContent = result.record_id || recordId;
-        document.getElementById('metaRegisteredAt').textContent = result.registered_at ? new Date(result.registered_at * 1000).toUTCString() : 'N/A';
-        document.getElementById('metaIssuer').textContent = result.issuer || 'N/A';
+        document.getElementById('metaRegisteredAt').textContent = result.registered_at ? new Date(result.registered_at).toLocaleString() : 'N/A';
+        document.getElementById('metaIssuer').textContent = result.doc_type ? result.doc_type.toUpperCase() : 'Ledger Record';
 
-        if (outcome === 'VERIFIED') {
+        if (outcome === 'MATCH' || outcome === 'VERIFIED') {
           sealIcon.classList.add('verified');
           sealIcon.innerHTML = '<span class="material-symbols-outlined" style="font-size: 28px;">check</span>';
-          resultTitle.textContent = 'Verified';
+          resultTitle.textContent = 'Verified Match';
           resultBadge.className = 'badge badge-verified';
           resultBadge.textContent = 'Matches registered record';
           resultDescription.textContent = 'This file matches the registered record precisely byte-for-byte.';
@@ -378,29 +404,38 @@
         } else if (outcome === 'MISMATCH') {
           sealIcon.classList.add('mismatch');
           sealIcon.innerHTML = '<span class="material-symbols-outlined" style="font-size: 28px;">close</span>';
-          resultTitle.textContent = 'Mismatch';
+          resultTitle.textContent = 'Hash Mismatch';
           resultBadge.className = 'badge badge-mismatch';
           resultBadge.textContent = 'File differs from registered version';
-          resultDescription.textContent = "This file doesn't match the registered version. It may have been edited or re-saved.";
+          resultDescription.textContent = 'This file does not match the registered record. The document has been modified, tampered with, or is an entirely different file.';
           matchStatusLabel.textContent = 'Hash Mismatch';
           matchStatusLabel.style.color = 'var(--status-mismatch-text)';
+
+          if (result.registered_hash && (result.computed_hash || clientComputedHash)) {
+            const { computedHtml, registeredHtml } = generateHashComparisonHtml(
+              result.computed_hash || clientComputedHash,
+              result.registered_hash
+            );
+            computedHashDisplay.innerHTML = computedHtml;
+            registeredHashDisplay.innerHTML = registeredHtml;
+          }
         } else if (outcome === 'REVOKED') {
           sealIcon.classList.add('revoked');
           sealIcon.innerHTML = '<span class="material-symbols-outlined" style="font-size: 28px;">block</span>';
-          resultTitle.textContent = 'Revoked';
+          resultTitle.textContent = 'Record Revoked';
           resultBadge.className = 'badge badge-revoked';
-          resultBadge.textContent = 'Record Revoked';
-          resultDescription.textContent = `This record was revoked${result.revocation_reason ? ' (' + result.revocation_reason + ')' : ''}.`;
+          resultBadge.textContent = 'Credential Revoked';
+          resultDescription.textContent = `This credential was officially revoked on the ledger${result.reason ? ' (Reason: ' + result.reason + ')' : ''}. It is no longer valid.`;
           matchStatusLabel.textContent = 'Revoked on Ledger';
           matchStatusLabel.style.color = 'var(--status-revoked-text)';
         } else if (outcome === 'NOT_FOUND') {
           sealIcon.classList.add('notfound');
           sealIcon.innerHTML = '<span class="material-symbols-outlined" style="font-size: 28px;">search_off</span>';
-          resultTitle.textContent = 'Not Found';
+          resultTitle.textContent = 'Record Not Found';
           resultBadge.className = 'badge badge-notfound';
-          resultBadge.textContent = 'Record not found';
-          resultDescription.textContent = "We couldn't find a record with that ID in the registry.";
-          matchStatusLabel.textContent = 'Unregistered';
+          resultBadge.textContent = 'Unregistered';
+          resultDescription.textContent = 'No record with this ID was found on the blockchain ledger. It has never been registered.';
+          matchStatusLabel.textContent = 'Unregistered ID';
           matchStatusLabel.style.color = 'var(--status-notfound-text)';
         }
       } else {

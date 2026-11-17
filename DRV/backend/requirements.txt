@@ -24,3 +24,8 @@ httpx  # also used as test client for FastAPI
 python-multipart==0.0.*
 passlib[bcrypt]==1.7.*
 
+# Rate limiting
+slowapi>=0.1.9
+
+# Testing extras
+pytest-timeout>=2.3

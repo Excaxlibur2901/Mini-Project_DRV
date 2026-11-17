@@ -125,54 +125,76 @@ flowchart LR
 
 ### 4.2 Clone and Configure Environment
 ```bash
-git clone https://github.com/vipul-ahirrao/Mini-Project_DRV.git
+git clone https://github.com/Excaxlibur2901/Mini-Project_DRV.git
 cd Mini-Project_DRV/DRV
 
-# Copy environment configuration
-cp .env.example .env
+# Copy environment configuration (Windows)
+Copy-Item .env.example .env
+# or on Linux/macOS: cp .env.example .env
 ```
 
-### 4.3 Initialize SQLite Database
-Apply migrations to initialize all 12 operational and evaluation tables:
-```bash
-python -c "import sqlite3; con = sqlite3.connect('data/verifier.db'); con.executescript(open('migrations/001_init.sql').read()); con.close(); print('Database initialized.')"
-```
+Edit `.env` and set `ADMIN_CREDENTIALS_HASH` to `SHA-256("admin:admin123")`.  
+Pre-computed value: `bf6b5bdb74c79ece9fc0ad0ac9fb0359f9555d4f35a83b2e6ec69ae99e09603d`
 
-### 4.4 Compile & Deploy Smart Contract
+### 4.3 Install Dependencies
 ```bash
-# Install Hardhat dependencies
+# Node dependencies (Hardhat, ethers, etc.)
 npm install
 
-# Compile Solidity contracts
+# Python dependencies
+pip install -r backend/requirements.txt
+```
+
+### 4.4 Compile Smart Contract
+```bash
 npx hardhat compile
-
-# Run Hardhat test suite (TC-01..TC-05)
-npx hardhat test
+npx hardhat test    # Solidity unit tests
 ```
 
-### 4.5 Start Local Blockchain Node
-In a separate terminal:
-```bash
+### 4.5 One-Command Startup (Windows PowerShell) ⭐
+```powershell
+cd DRV
+.\start.ps1
+```
+This single script:
+1. Starts the Hardhat local EVM node at `http://127.0.0.1:8545`
+2. Deploys `RecordRegistry.sol` to `0x5FbDB2315678afecb367f032d93F642f64180aa3`
+3. Generates sample PDFs (if not already present in `data/sample_certs/`)
+4. Seeds CERT-101/102/103(revoked)/104 with real SHA-256 hashes on-chain
+5. Launches FastAPI at `http://127.0.0.1:8000`
+
+### 4.6 Manual Startup (alternative)
+```powershell
+# Terminal 1 — Hardhat node
 npx hardhat node
-```
-Deploy the contract to the local node:
-```bash
-npx hardhat run scripts/deploy.js --network localhost
-```
-Copy the deployed address to `CONTRACT_ADDRESS` in `.env`.
 
-### 4.6 Launch the FastAPI Application
-```bash
-$env:PYTHONPATH = "backend"
-uvicorn app.main:app --reload --app-dir backend --port 8000
+# Terminal 2 — Deploy + Seed
+npx hardhat run scripts/deploy.js --network localhost
+npx hardhat run scripts/seed_real.js --network localhost
+
+# Terminal 3 — FastAPI backend
+C:\Python314\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --app-dir backend --reload
 ```
-- **Web Interface:** Open `http://localhost:8000/` (serves the frontend)
-  - Verify File: `http://localhost:8000/index.html`
-  - Ask Question (NLP): `http://localhost:8000/ask.html`
-  - Admin Portal: `http://localhost:8000/admin.html`
-  - Evaluation & Benchmarks: `http://localhost:8000/results.html`
-- **Interactive OpenAPI Docs:** `http://localhost:8000/docs`
-- **Health Check:** `http://localhost:8000/api/health`
+
+### 4.7 Access the Application
+| URL | Purpose |
+|---|---|
+| `http://127.0.0.1:8000/` | Certificate Verifier UI |
+| `http://127.0.0.1:8000/admin.html` | Admin Portal (login: admin / admin123) |
+| `http://127.0.0.1:8000/ask.html` | NLP Query Interface |
+| `http://127.0.0.1:8000/results.html` | Evaluation & Benchmarks |
+| `http://127.0.0.1:8000/docs` | Interactive OpenAPI Docs |
+| `http://127.0.0.1:8000/api/health` | Live Health Check |
+
+### 4.8 Sample Certificate Test Cases
+Download from `http://127.0.0.1:8000/data/sample_certs/` or use the quick-bar on the verifier page:
+
+| File | Record ID | Expected Result |
+|---|---|---|
+| `sample_cert_101.pdf` | `CERT-101` | ✅ MATCH |
+| `sample_cert_101_tampered.pdf` | `CERT-101` | ⚠️ MISMATCH |
+| `sample_cert_102.pdf` | `CERT-102` | ✅ MATCH |
+| `sample_cert_103.pdf` | `CERT-103` | 🚫 REVOKED |
 
 ---
 
@@ -210,10 +232,10 @@ DRV/backend/tests/test_health.py .                                       [100%]
 
 | ID | Scenario | Expected Outcome | System Outcome | Status |
 |---|---|---|---|---|
-| **TC-01** | Registered certificate, original file | Hash match | HTTP 200 · `status: "VERIFIED"` | **PASS** |
-| **TC-02** | Modified certificate file (1 byte) | Mismatch detected | HTTP 200 · `status: "MISMATCH"` | **PASS** |
-| **TC-03** | Unknown record ID (`CERT-999`) | Not found on-chain | HTTP 200 · `status: "NOT_FOUND"` | **PASS** |
-| **TC-04** | Revoked certificate (`CERT-103`) | Revocation state shown | HTTP 200 · `status: "REVOKED"` | **PASS** |
+| **TC-01** | Registered certificate, original file | Hash match | HTTP 200 · `state: "MATCH"` | **PASS** |
+| **TC-02** | Modified certificate file (1 byte) | Mismatch detected | HTTP 200 · `state: "MISMATCH"` | **PASS** |
+| **TC-03** | Unknown record ID (`CERT-999`) | Not found on-chain | HTTP 200 · `state: "NOT_FOUND"` | **PASS** |
+| **TC-04** | Revoked certificate (`CERT-103`) | Revocation state shown | HTTP 200 · `state: "REVOKED"` | **PASS** |
 | **TC-05** | Unauthorized mutation attempt | Role check rejection | HTTP 403 · Stage 4 `E_UNAUTHORIZED` | **PASS** |
 | **TC-06** | Malformed model JSON syntax | Schema check failure | HTTP 400 · Stage 1 `E_SCHEMA` | **PASS** |
 | **TC-07** | Ambiguous query missing record ID | Clarification requested | HTTP 422 · Stage 5 `E_AMBIGUOUS` | **PASS** |
