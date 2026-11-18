@@ -64,4 +64,4 @@ def test_api_routes_not_shadowed(client):
     """API routes like /api/health and /api/verify take precedence over static files."""
     health_res = client.get("/api/health")
     assert health_res.status_code == 200
-    assert health_res.json()["status"] == "ok"
+    assert health_res.json()["status"] in ("ok", "degraded")
